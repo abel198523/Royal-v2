@@ -6,14 +6,10 @@ const { Pool } = require('pg');
  * በ Render Dashboard ላይ በሚሰጥህ የ Neon Connection String መቀየር አለብህ።
  */
 
-const connectionString = process.env.DATABASE_URL || 'YOUR_NEON_CONNECTION_STRING_HERE';
+const connectionString = process.env.DATABASE_URL;
 
 const pool = new Pool({
-    connectionString: connectionString,
-    ssl: {
-        // Neon በ SSL ብቻ ስለሚሰራ ይህ ግዴታ ነው
-        rejectUnauthorized: false 
-    }
+    connectionString: connectionString
 });
 
 // የዳታቤዝ ግንኙነቱን መፈተሻ

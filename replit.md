@@ -1,0 +1,37 @@
+# Fidel Bingo
+
+## Overview
+A web-based Bingo game application with real-time gameplay using WebSockets.
+
+## Tech Stack
+- **Backend**: Node.js, Express.js
+- **WebSockets**: ws library for real-time game updates
+- **Database**: PostgreSQL (Replit built-in)
+- **Authentication**: bcryptjs + jsonwebtoken
+
+## Project Structure
+```
+├── server.js      # Express server, WebSocket handler, API routes
+├── db.js          # PostgreSQL connection pool
+├── game.js        # Client-side game logic
+├── index.html     # Main game interface
+├── style.css      # Game styling
+└── package.json   # Dependencies
+```
+
+## Running the Application
+- Server runs on port 5000 (bound to 0.0.0.0)
+- WebSocket connection established automatically on page load
+- Game starts automatically with 5-second ball draw intervals
+
+## Database Schema
+- `users` table: id, username, phone_number, password_hash, balance, created_at
+
+## API Endpoints
+- `POST /api/login` - User authentication with phone and password
+
+## WebSocket Events
+- `INIT` - Sent on connection with game history
+- `NEW_BALL` - Broadcast when new ball is drawn
+- `GAME_START` - Broadcast when new game starts
+- `BUY_CARD` - Client message to purchase a card

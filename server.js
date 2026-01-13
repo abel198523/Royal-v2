@@ -12,7 +12,7 @@ const wss = new WebSocket.Server({ server });
 
 const SECRET_KEY = "bingo_secret_123";
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 let balls = [];
 let drawnBalls = [];
@@ -68,8 +68,8 @@ wss.on('connection', (ws) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     startNewGame();
 });
