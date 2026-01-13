@@ -1,4 +1,5 @@
-const socket = new WebSocket(`ws://${window.location.host}`);
+const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const socket = new WebSocket(`${protocol}//${window.location.host}`);
 const bingoBoard = document.getElementById('bingo-board');
 const activeBall = document.getElementById('active-ball');
 const recentBalls = document.getElementById('recent-balls');
