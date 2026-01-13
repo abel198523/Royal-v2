@@ -1,15 +1,11 @@
+require('dotenv').config();
 const { Pool } = require('pg');
-
-/**
- * Neon.tech PostgreSQL ግንኙነት
- * * ማሳሰቢያ፡ 'DATABASE_URL' የሚለውን ኢንቫይሮንመንት ቫሪያብል 
- * በ Render Dashboard ላይ በሚሰጥህ የ Neon Connection String መቀየር አለብህ።
- */
 
 const connectionString = process.env.DATABASE_URL;
 
 const pool = new Pool({
-    connectionString: connectionString
+    connectionString: connectionString,
+    ssl: process.env.DATABASE_URL.includes('render.com') || process.env.DATABASE_URL.includes('neon.tech') ? { rejectUnauthorized: false } : false
 });
 
 // የዳታቤዝ ግንኙነቱን መፈተሻ
