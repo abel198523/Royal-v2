@@ -3,38 +3,21 @@ const bingoBoard = document.getElementById('bingo-board');
 const activeBall = document.getElementById('active-ball');
 const recentBalls = document.getElementById('recent-balls');
 const callCount = document.getElementById('call-count');
-const progressFill = document.getElementById('progress-fill');
-const cardsGrid = document.getElementById('available-cards');
+const progressBar = document.getElementById('progress-bar');
+const progressText = document.getElementById('progress-text');
 
-// 1. የቢንጎ ቁጥሮች ሰሌዳ (1-75)
+// Create the 75 number grid
 function createBingoNumbers() {
     bingoBoard.innerHTML = '';
     for (let i = 1; i <= 75; i++) {
         const cell = document.createElement('div');
-        cell.className = 'num-cell';
+        cell.className = 'bingo-cell';
         cell.id = `num-${i}`;
         cell.innerText = i;
         bingoBoard.appendChild(cell);
     }
 }
 
-// 2. የካርድ መምረጫ (1-100)
-function createAvailableCards() {
-    cardsGrid.innerHTML = '';
-    for (let i = 1; i <= 100; i++) {
-        const card = document.createElement('div');
-        card.className = 'card-item';
-        card.innerText = i;
-        card.onclick = () => {
-            document.querySelectorAll('.card-item').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            socket.send(JSON.stringify({ type: 'BUY_CARD', cardNumber: i }));
-        };
-        cardsGrid.appendChild(card);
-    }
-}
-
-// 3. መረጃ ከሰርቨር ሲመጣ
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     if (data.type === 'INIT' || data.type === 'NEW_BALL') {
@@ -43,23 +26,36 @@ socket.onmessage = (event) => {
 };
 
 function updateGameUI(history) {
-    if (history.length === 0) return;
+    if (history.length === 0) {
+        activeBall.innerText = '--';
+        recentBalls.innerHTML = '';
+        return;
+    }
     
     const lastBall = history[history.length - 1];
-    activeBall.innerText = lastBall;
+    let letter = '';
+    if (lastBall <= 15) letter = 'B';
+    else if (lastBall <= 30) letter = 'I';
+    else if (lastBall <= 45) letter = 'N';
+    else if (lastBall <= 60) letter = 'G';
+    else letter = 'O';
+
+    activeBall.innerText = `${letter} ${lastBall}`;
     
+    // Clear previous called states
+    document.querySelectorAll('.bingo-cell').forEach(cell => cell.classList.remove('called'));
+
     history.forEach(num => {
         const el = document.getElementById(`num-${num}`);
         if (el) el.classList.add('called');
     });
 
     const recent = history.slice(-4, -1).reverse();
-    recentBalls.innerHTML = recent.map(n => `<span>${n}</span>`).join(' ');
+    recentBalls.innerHTML = recent.map(n => `<div class="history-ball">${n}</div>`).join('');
     
     callCount.innerText = history.length;
-    progressFill.style.width = `${(history.length / 75) * 100}%`;
+    progressText.innerText = `${history.length}/75`;
+    progressBar.style.width = `${(history.length / 75) * 100}%`;
 }
 
-// ማስጀመሪያ
 createBingoNumbers();
-createAvailableCards();

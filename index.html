@@ -9,50 +9,68 @@
 <body>
     <div class="app-container">
         <header>
-            <div class="status">
-                <span id="connection-dot"></span>
-                <span id="connection-text">CONNECTED</span>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                CONNECTED
             </div>
-            <div class="user-info">
-                <span id="username">User</span>
+            <div class="user-profile">
+                <span id="username">royalsup1</span>
                 <button class="logout-btn">🚪</button>
             </div>
         </header>
 
-        <div class="stats-grid">
-            <div class="stat-card"><span>DERASH</span><strong id="derash">0</strong></div>
-            <div class="stat-card"><span>PLAYERS</span><strong id="players">0</strong></div>
-            <div class="stat-card"><span>BET</span><strong id="bet-amount">10</strong></div>
-            <div class="stat-card"><span>CALLS</span><strong id="call-count">0</strong></div>
+        <div class="error-banner">
+            <span>💰 Insufficient balance for stake</span>
+            <strong>Need: 10 | Have: 5</strong>
         </div>
 
-        <main class="game-layout">
-            <div class="bingo-board" id="bingo-board">
-                </div>
+        <div class="stats-row">
+            <div class="stat-box">
+                <span class="stat-label">DERASH</span>
+                <span class="stat-value" id="derash">168</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">PLAYERS</span>
+                <span class="stat-value" id="players">21</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">BET</span>
+                <span class="stat-value" id="bet-amount">10</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">CALLS</span>
+                <span class="stat-value" id="call-count">5</span>
+            </div>
+        </div>
 
-            <aside class="game-sidebar">
-                <div class="current-call">
-                    <span>CURRENT CALL</span>
-                    <div id="active-ball">--</div>
-                    <div class="recent-balls" id="recent-balls">
-                        </div>
-                </div>
-                
-                <div class="controls">
-                    <label>Auto</label>
-                    <input type="checkbox" id="auto-toggle">
-                </div>
+        <div class="game-main">
+            <div class="bingo-headers">
+                <span class="header-B">B</span>
+                <span class="header-I">I</span>
+                <span class="header-N">N</span>
+                <span class="header-G">G</span>
+                <span class="header-O">O</span>
+            </div>
+            <div class="bingo-grid" id="bingo-board">
+                <!-- Grid cells injected by JS -->
+            </div>
+        </div>
 
-                <div class="message-box" id="game-status">
-                    No Board Selected<br>
-                    <small>Waiting for next game...</small>
-                </div>
-            </aside>
-        </main>
+        <div class="call-display">
+            <span class="stat-label">CURRENT CALL</span>
+            <div class="ball-main" id="active-ball">N 34</div>
+            <div class="ball-history" id="recent-balls">
+                <!-- Recent balls injected by JS -->
+            </div>
+        </div>
 
-        <div class="progress-container">
-            <div id="progress-text">Total Called: 0/75</div>
-            <div class="progress-bar"><div id="progress-fill"></div></div>
+        <div class="footer-stats">
+            <span>Total Called: <span id="progress-text">5/75</span></span>
+            <div style="width: 150px">
+                <div class="progress-container">
+                    <div id="progress-bar"></div>
+                </div>
+            </div>
         </div>
     </div>
     <script src="game.js"></script>
