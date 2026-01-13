@@ -151,35 +151,55 @@ function createCardPreview(cardData) {
     return container;
 }
 
+const previewOverlay = document.getElementById('preview-overlay');
+const modalCardContent = document.getElementById('modal-card-content');
+const previewCardNumber = document.getElementById('preview-card-number');
+const closePreview = document.getElementById('close-preview');
+const rejectCard = document.getElementById('reject-card');
+const confirmCard = document.getElementById('confirm-card');
+
+let currentSelectedCard = null;
+let currentCardData = null;
+
 function createAvailableCards() {
     cardsGrid.innerHTML = '';
     const takenCards = [14, 38];
     for (let i = 1; i <= 100; i++) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'card-wrapper';
+        const card = document.createElement('div');
+        card.className = 'card-item';
+        if (takenCards.includes(i)) card.classList.add('taken');
+        card.innerText = i;
         
-        const label = document.createElement('div');
-        label.className = 'card-label';
-        label.innerText = `Card #${i}`;
-        wrapper.appendChild(label);
-
-        const cardData = generateBingoCard();
-        const preview = createCardPreview(cardData);
-        wrapper.appendChild(preview);
-
-        if (takenCards.includes(i)) {
-            wrapper.classList.add('taken');
-        }
-
-        wrapper.onclick = () => {
-            if (wrapper.classList.contains('taken')) return;
-            document.querySelectorAll('.card-wrapper').forEach(c => c.classList.remove('selected'));
-            wrapper.classList.add('selected');
-            socket.send(JSON.stringify({ type: 'BUY_CARD', cardNumber: i, cardData }));
+        card.onclick = () => {
+            if (card.classList.contains('taken')) return;
+            showCardPreview(i);
         };
-        cardsGrid.appendChild(wrapper);
+        cardsGrid.appendChild(card);
     }
 }
+
+function showCardPreview(num) {
+    currentSelectedCard = num;
+    currentCardData = generateBingoCard();
+    previewCardNumber.innerText = `Card #${num}`;
+    modalCardContent.innerHTML = '';
+    modalCardContent.appendChild(createCardPreview(currentCardData));
+    previewOverlay.classList.add('active');
+}
+
+closePreview.onclick = () => previewOverlay.classList.remove('active');
+rejectCard.onclick = () => previewOverlay.classList.remove('active');
+
+confirmCard.onclick = () => {
+    socket.send(JSON.stringify({ 
+        type: 'BUY_CARD', 
+        cardNumber: currentSelectedCard, 
+        cardData: currentCardData 
+    }));
+    previewOverlay.classList.remove('active');
+    // Optionally switch screens here
+    selectionScreen.classList.remove('active');
+};
 
 createBingoNumbers();
 createAvailableCards();
