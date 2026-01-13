@@ -220,34 +220,45 @@ body {
 
 .modal-card-content {
     background: #111827;
-    padding: 10px;
+    padding: 15px;
     border-radius: 12px;
     margin-bottom: 20px;
 }
 
-.preview-actions {
+.card-preview {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+}
+
+.preview-header {
+    font-size: 14px;
+    font-weight: 900;
+    text-align: center;
+    color: var(--text-white);
+    padding-bottom: 8px;
+    border-bottom: 2px solid #374151;
+    margin-bottom: 8px;
+}
+
+.preview-cell {
+    background: #1e293b;
+    aspect-ratio: 1;
     display: flex;
-    gap: 10px;
-}
-
-.action-btn {
-    flex: 1;
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 15px;
-}
-
-.action-btn.reject {
-    background: #374151;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
     color: white;
+    border: 1px solid #334155;
 }
 
-.action-btn.confirm {
-    background: var(--ball-green);
+.preview-cell.free-spot {
+    background: #3b82f6;
+    font-size: 10px;
     color: white;
+    text-transform: uppercase;
 }
 
 header {
