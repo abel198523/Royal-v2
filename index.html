@@ -15,61 +15,70 @@
             </div>
             <div class="user-profile">
                 <span id="username">royalsup1</span>
-                <button class="logout-btn">🚪</button>
+                <button class="logout-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
             </div>
         </header>
 
-        <div class="error-banner">
-            <span>💰 Insufficient balance for stake</span>
-            <strong>Need: 10 | Have: 5</strong>
-        </div>
-
-        <div class="stats-row">
-            <div class="stat-box">
+        <div class="stats-grid">
+            <div class="stat-card">
                 <span class="stat-label">DERASH</span>
                 <span class="stat-value" id="derash">168</span>
             </div>
-            <div class="stat-box">
+            <div class="stat-card">
                 <span class="stat-label">PLAYERS</span>
                 <span class="stat-value" id="players">21</span>
             </div>
-            <div class="stat-box">
+            <div class="stat-card">
                 <span class="stat-label">BET</span>
                 <span class="stat-value" id="bet-amount">10</span>
             </div>
-            <div class="stat-box">
+            <div class="stat-card">
                 <span class="stat-label">CALLS</span>
                 <span class="stat-value" id="call-count">5</span>
             </div>
         </div>
 
-        <div class="game-main">
-            <div class="bingo-headers">
-                <span class="header-B">B</span>
-                <span class="header-I">I</span>
-                <span class="header-N">N</span>
-                <span class="header-G">G</span>
-                <span class="header-O">O</span>
-            </div>
-            <div class="bingo-grid" id="bingo-board">
-                <!-- Grid cells injected by JS -->
-            </div>
-        </div>
-
-        <div class="call-display">
-            <span class="stat-label">CURRENT CALL</span>
-            <div class="ball-main" id="active-ball">N 34</div>
-            <div class="ball-history" id="recent-balls">
-                <!-- Recent balls injected by JS -->
-            </div>
-        </div>
-
-        <div class="footer-stats">
-            <span>Total Called: <span id="progress-text">5/75</span></span>
-            <div style="width: 150px">
-                <div class="progress-container">
-                    <div id="progress-bar"></div>
+        <div class="game-layout">
+            <div class="board-container">
+                <div class="bingo-headers">
+                    <span class="h-B" data-count="2">B</span>
+                    <span class="h-I" data-count="0">I</span>
+                    <span class="h-N" data-count="2">N</span>
+                    <span class="h-G" data-count="1">G</span>
+                    <span class="h-O" data-count="0">O</span>
                 </div>
+                <div class="bingo-grid" id="bingo-board">
+                    <!-- Grid cells injected by JS -->
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <div class="call-card">
+                    <span class="stat-label">CURRENT CALL</span>
+                    <div class="ball-circle" id="active-ball">N34</div>
+                    <div class="history-strip" id="recent-balls">
+                        <!-- Recent balls -->
+                    </div>
+                </div>
+
+                <div class="auto-box">
+                    <span>Auto</span>
+                    <div class="toggle" id="auto-toggle"></div>
+                </div>
+
+                <div class="no-board-card">
+                    <div class="no-board-title">No Board Selected</div>
+                    <div class="no-board-sub">Waiting for next game...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Total Called: <span id="progress-text" style="color: var(--ball-green)">5/75</span>
+            <div class="progress-wrap">
+                <div class="progress-fill" id="progress-bar"></div>
             </div>
         </div>
     </div>

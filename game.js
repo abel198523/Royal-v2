@@ -6,15 +6,26 @@ const callCount = document.getElementById('call-count');
 const progressBar = document.getElementById('progress-bar');
 const progressText = document.getElementById('progress-text');
 
-// Create the 75 number grid
+const colors = {
+    B: '#3b82f6',
+    I: '#8b5cf6',
+    N: '#22c55e',
+    G: '#f59e0b',
+    O: '#ef4444'
+};
+
 function createBingoNumbers() {
     bingoBoard.innerHTML = '';
-    for (let i = 1; i <= 75; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'bingo-cell';
-        cell.id = `num-${i}`;
-        cell.innerText = i;
-        bingoBoard.appendChild(cell);
+    // Create columns B(1-15), I(16-30), N(31-45), G(46-60), O(61-75)
+    for (let row = 0; row < 15; row++) {
+        for (let col = 0; col < 5; col++) {
+            const num = (col * 15) + row + 1;
+            const cell = document.createElement('div');
+            cell.className = 'bingo-cell';
+            cell.id = `num-${num}`;
+            cell.innerText = num;
+            bingoBoard.appendChild(cell);
+        }
     }
 }
 
@@ -25,6 +36,14 @@ socket.onmessage = (event) => {
     }
 };
 
+function getBallLetter(num) {
+    if (num <= 15) return 'B';
+    if (num <= 30) return 'I';
+    if (num <= 45) return 'N';
+    if (num <= 60) return 'G';
+    return 'O';
+}
+
 function updateGameUI(history) {
     if (history.length === 0) {
         activeBall.innerText = '--';
@@ -33,25 +52,46 @@ function updateGameUI(history) {
     }
     
     const lastBall = history[history.length - 1];
-    let letter = '';
-    if (lastBall <= 15) letter = 'B';
-    else if (lastBall <= 30) letter = 'I';
-    else if (lastBall <= 45) letter = 'N';
-    else if (lastBall <= 60) letter = 'G';
-    else letter = 'O';
+    const letter = getBallLetter(lastBall);
+    activeBall.innerText = `${letter}${lastBall}`;
+    activeBall.parentElement.style.borderColor = colors[letter];
 
-    activeBall.innerText = `${letter} ${lastBall}`;
-    
-    // Clear previous called states
-    document.querySelectorAll('.bingo-cell').forEach(cell => cell.classList.remove('called'));
+    // Reset styles
+    document.querySelectorAll('.bingo-cell').forEach(cell => {
+        cell.classList.remove('called', 'last-called', 'blue-highlight');
+    });
 
-    history.forEach(num => {
+    const counts = { B: 0, I: 0, N: 0, G: 0, O: 0 };
+
+    history.forEach((num, index) => {
         const el = document.getElementById(`num-${num}`);
-        if (el) el.classList.add('called');
+        const l = getBallLetter(num);
+        counts[l]++;
+        
+        if (el) {
+            if (index === history.length - 1) {
+                el.classList.add('last-called');
+            } else if (l === 'B' || l === 'I') {
+                el.classList.add('blue-highlight');
+            } else if (l === 'N') {
+                el.classList.add('called');
+            } else {
+                el.classList.add('called');
+            }
+        }
+    });
+
+    // Update headers counts
+    Object.keys(counts).forEach(l => {
+        const header = document.querySelector(`.h-${l}`);
+        if (header) header.setAttribute('data-count', counts[l]);
     });
 
     const recent = history.slice(-4, -1).reverse();
-    recentBalls.innerHTML = recent.map(n => `<div class="history-ball">${n}</div>`).join('');
+    recentBalls.innerHTML = recent.map(n => {
+        const l = getBallLetter(n);
+        return `<div class="hist-ball" style="background: ${colors[l]}">${l}${n}</div>`;
+    }).join('');
     
     callCount.innerText = history.length;
     progressText.innerText = `${history.length}/75`;
