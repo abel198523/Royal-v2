@@ -8,6 +8,54 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Selection Screen Overlay -->
+        <div id="selection-screen" class="selection-screen active">
+            <div class="selection-header">
+                <div class="selection-title">Fidel bingo</div>
+                <div class="user-profile">
+                    <span id="sel-username">royalsup1</span>
+                    <button class="logout-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="error-banner">
+                <span>💰 Insufficient balance for stake</span>
+                <strong>Need: 10 | Have: 5</strong>
+            </div>
+
+            <div class="selection-stats">
+                <div class="sel-stat-box highlight">
+                    <span class="sel-stat-label">BALANCE</span>
+                    <span class="sel-stat-value" id="sel-balance">5</span>
+                </div>
+                <div class="sel-stat-box">
+                    <span class="sel-stat-label">STAKE</span>
+                    <span class="sel-stat-value">10</span>
+                </div>
+                <div class="sel-stat-box">
+                    <span class="sel-stat-label">YOUR BOARD</span>
+                    <span class="sel-stat-value" id="sel-my-board">-</span>
+                </div>
+            </div>
+
+            <div class="cards-container">
+                <div class="cards-header">
+                    <div class="timer-badge">
+                        ⏰ <span id="selection-timer">0:26</span>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item"><div class="dot green"></div> Available (196)</div>
+                        <div class="legend-item"><div class="dot red"></div> Taken (4)</div>
+                    </div>
+                </div>
+                <div class="cards-grid" id="cards-grid">
+                    <!-- Cards injected by JS -->
+                </div>
+            </div>
+        </div>
+
         <header>
             <div class="status-badge">
                 <div class="status-dot"></div>

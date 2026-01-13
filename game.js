@@ -98,4 +98,29 @@ function updateGameUI(history) {
     progressBar.style.width = `${(history.length / 75) * 100}%`;
 }
 
+const cardsGrid = document.getElementById('cards-grid');
+const selectionScreen = document.getElementById('selection-screen');
+
+function createAvailableCards() {
+    cardsGrid.innerHTML = '';
+    const takenCards = [14, 38]; // Mock data matching screenshot
+    for (let i = 1; i <= 200; i++) {
+        const card = document.createElement('div');
+        card.className = 'card-item';
+        if (takenCards.includes(i)) card.classList.add('taken');
+        card.innerText = i;
+        card.onclick = () => {
+            if (card.classList.contains('taken')) return;
+            document.querySelectorAll('.card-item').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            socket.send(JSON.stringify({ type: 'BUY_CARD', cardNumber: i }));
+            
+            // For demo: auto switch to game screen after selection
+            // setTimeout(() => selectionScreen.classList.remove('active'), 1000);
+        };
+        cardsGrid.appendChild(card);
+    }
+}
+
 createBingoNumbers();
+createAvailableCards();
