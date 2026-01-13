@@ -154,6 +154,29 @@ body {
     gap: 8px;
 }
 
+@media (max-width: 480px) {
+    .cards-grid {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+    }
+    
+    .card-item {
+        font-size: 14px;
+    }
+
+    .selection-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .sel-stat-box:last-child {
+        grid-column: span 2;
+    }
+
+    .game-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
 .card-item {
     background: #252d3d;
     aspect-ratio: 1;
