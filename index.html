@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fidel Bingo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="status">
+                <span id="connection-dot"></span>
+                <span id="connection-text">CONNECTED</span>
+            </div>
+            <div class="user-info">
+                <span id="username">User</span>
+                <button class="logout-btn">🚪</button>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card"><span>DERASH</span><strong id="derash">0</strong></div>
+            <div class="stat-card"><span>PLAYERS</span><strong id="players">0</strong></div>
+            <div class="stat-card"><span>BET</span><strong id="bet-amount">10</strong></div>
+            <div class="stat-card"><span>CALLS</span><strong id="call-count">0</strong></div>
+        </div>
+
+        <main class="game-layout">
+            <div class="bingo-board" id="bingo-board">
+                </div>
+
+            <aside class="game-sidebar">
+                <div class="current-call">
+                    <span>CURRENT CALL</span>
+                    <div id="active-ball">--</div>
+                    <div class="recent-balls" id="recent-balls">
+                        </div>
+                </div>
+                
+                <div class="controls">
+                    <label>Auto</label>
+                    <input type="checkbox" id="auto-toggle">
+                </div>
+
+                <div class="message-box" id="game-status">
+                    No Board Selected<br>
+                    <small>Waiting for next game...</small>
+                </div>
+            </aside>
+        </main>
+
+        <div class="progress-container">
+            <div id="progress-text">Total Called: 0/75</div>
+            <div class="progress-bar"><div id="progress-fill"></div></div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
