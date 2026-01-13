@@ -102,21 +102,82 @@ function updateGameUI(history) {
 const cardsGrid = document.getElementById('cards-grid');
 const selectionScreen = document.getElementById('selection-screen');
 
+function generateBingoCard() {
+    const card = {};
+    const ranges = {
+        B: [1, 15],
+        I: [16, 30],
+        N: [31, 45],
+        G: [46, 60],
+        O: [61, 75]
+    };
+
+    Object.keys(ranges).forEach(letter => {
+        const [min, max] = ranges[letter];
+        const nums = [];
+        while (nums.length < 5) {
+            const num = Math.floor(Math.random() * (max - min + 1)) + min;
+            if (!nums.includes(num)) nums.push(num);
+        }
+        card[letter] = nums.sort((a, b) => a - b);
+    });
+    
+    // Middle spot is FREE
+    card['N'][2] = 'FREE';
+    return card;
+}
+
+function createCardPreview(cardData) {
+    const container = document.createElement('div');
+    container.className = 'card-preview';
+    
+    const letters = ['B', 'I', 'N', 'G', 'O'];
+    letters.forEach(l => {
+        const header = document.createElement('div');
+        header.className = 'preview-header';
+        header.innerText = l;
+        container.appendChild(header);
+    });
+
+    for (let row = 0; row < 5; row++) {
+        letters.forEach(l => {
+            const cell = document.createElement('div');
+            cell.className = 'preview-cell';
+            if (cardData[l][row] === 'FREE') cell.classList.add('free-spot');
+            cell.innerText = cardData[l][row];
+            container.appendChild(cell);
+        });
+    }
+    return container;
+}
+
 function createAvailableCards() {
     cardsGrid.innerHTML = '';
-    const takenCards = [14, 38]; // Mock data matching screenshot
+    const takenCards = [14, 38];
     for (let i = 1; i <= 100; i++) {
-        const card = document.createElement('div');
-        card.className = 'card-item';
-        if (takenCards.includes(i)) card.classList.add('taken');
-        card.innerText = i;
-        card.onclick = () => {
-            if (card.classList.contains('taken')) return;
-            document.querySelectorAll('.card-item').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            socket.send(JSON.stringify({ type: 'BUY_CARD', cardNumber: i }));
+        const wrapper = document.createElement('div');
+        wrapper.className = 'card-wrapper';
+        
+        const label = document.createElement('div');
+        label.className = 'card-label';
+        label.innerText = `Card #${i}`;
+        wrapper.appendChild(label);
+
+        const cardData = generateBingoCard();
+        const preview = createCardPreview(cardData);
+        wrapper.appendChild(preview);
+
+        if (takenCards.includes(i)) {
+            wrapper.classList.add('taken');
+        }
+
+        wrapper.onclick = () => {
+            if (wrapper.classList.contains('taken')) return;
+            document.querySelectorAll('.card-wrapper').forEach(c => c.classList.remove('selected'));
+            wrapper.classList.add('selected');
+            socket.send(JSON.stringify({ type: 'BUY_CARD', cardNumber: i, cardData }));
         };
-        cardsGrid.appendChild(card);
+        cardsGrid.appendChild(wrapper);
     }
 }
 
