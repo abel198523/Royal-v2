@@ -28,7 +28,6 @@ STAKES.forEach(amount => {
         countdownInterval: null,
         players: new Set()
     };
-    startRoomCountdown(amount);
 });
 
 // --- AUTH API ---
@@ -215,4 +214,7 @@ wss.on('connection', (ws) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
+    STAKES.forEach(amount => {
+        startRoomCountdown(amount);
+    });
 });
