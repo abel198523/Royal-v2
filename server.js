@@ -118,11 +118,17 @@ function startRoomCountdown(amount) {
     
     room.countdownInterval = setInterval(() => {
         room.gameCountdown--;
-        broadcastToRoom(amount, { type: 'COUNTDOWN', value: room.gameCountdown, room: amount });
-        updateGlobalStats();
         
+        // Broadcast to all clients in the room
+        broadcastToRoom(amount, { 
+            type: 'COUNTDOWN', 
+            value: room.gameCountdown, 
+            room: amount 
+        });
+
         if (room.gameCountdown <= 0) {
             clearInterval(room.countdownInterval);
+            room.countdownInterval = null;
             startRoomGame(amount);
         }
     }, 1000);
