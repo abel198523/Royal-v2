@@ -206,16 +206,19 @@ window.joinStake = (amount) => {
     currentRoom = amount;
     socket.send(JSON.stringify({ type: 'JOIN_ROOM', room: amount }));
     
-    // Switch to game board view
-    stakeScreen.classList.remove('active');
-    selectionScreen.classList.remove('active');
-    profileScreen.classList.remove('active');
-    walletScreen.classList.remove('active');
+    // Switch to selection screen (card board)
+    const screens = ['stake-screen', 'profile-screen', 'wallet-screen'];
+    screens.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.classList.remove('active');
+    });
     
-    // Ensure the main game layout is visible (it's inside main-content)
+    selectionScreen.classList.add('active');
+    
+    // Ensure the main game layout is hidden while selecting cards
     document.getElementById('main-content').style.display = 'block';
     
-    console.log(`Joined stake room: ${amount}, switched to game board`);
+    console.log(`Joined stake room: ${amount}, switched to card selection`);
 };
 
 function generateBingoCard() {
@@ -523,22 +526,36 @@ if (menuOverlay) menuOverlay.onclick = toggleMenu;
 
 window.navTo = (target) => {
     console.log(`Navigating to: ${target}`);
-    // Hide all screens
+    
+    // Define all screen IDs
     const screens = ['stake-screen', 'selection-screen', 'profile-screen', 'wallet-screen'];
+    
+    // Hide all screens
     screens.forEach(s => {
         const el = document.getElementById(s);
         if (el) el.classList.remove('active');
     });
 
+    // Special case for deposit/withdraw (redirect to wallet for now)
+    let finalTarget = target;
+    if (target === 'deposit' || target === 'withdraw') {
+        finalTarget = 'wallet';
+    }
+
     // Show target screen
-    const targetId = `${target}-screen`;
+    const targetId = `${finalTarget}-screen`;
     const targetEl = document.getElementById(targetId);
-    if (targetEl) targetEl.classList.add('active');
+    if (targetEl) {
+        targetEl.classList.add('active');
+    }
 
     // Update active state in UI
     document.querySelectorAll('.menu-item').forEach(el => {
         el.classList.remove('active');
-        if (el.innerText.toLowerCase().includes(target)) el.classList.add('active');
+        // Check if the link text or icon matches the target
+        if (el.getAttribute('onclick') && el.getAttribute('onclick').includes(`'${target}'`)) {
+            el.classList.add('active');
+        }
     });
     
     toggleMenu();
