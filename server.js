@@ -31,6 +31,87 @@ STAKES.forEach(amount => {
     startRoomCountdown(amount);
 });
 
+// --- AUTH API ---
+let pendingOTP = {}; // Store temporary signup data
+
+app.post('/api/signup-request', async (req, res) => {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: "ስልክ ቁጥር ያስገቡ" });
+    try {
+        const existing = await db.query('SELECT id FROM users WHERE phone_number = $1', [phone]);
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ error: "ይህ ስልክ ቁጥር ቀድሞ ተመዝግቧል" });
+        }
+
+        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        pendingOTP[phone] = { otp, timestamp: Date.now() };
+        
+        console.log(`\n--- OTP VERIFICATION ---\nPhone: ${phone}\nCode: ${otp}\n------------------------\n`);
+        
+        res.json({ message: "OTP sent" });
+    } catch (err) {
+        console.error('Signup Request Error:', err);
+        res.status(500).json({ error: "የሰርቨር ስህተት አጋጥሟል: " + err.message });
+    }
+});
+
+app.post('/api/signup-verify', async (req, res) => {
+    const { phone, password, name, otp } = req.body;
+    try {
+        const record = pendingOTP[phone];
+        if (!record || record.otp !== otp) {
+            return res.status(400).json({ error: "የተሳሳተ የኦቲፒ ኮድ" });
+        }
+
+        // Clean up OTP
+        delete pendingOTP[phone];
+
+        const hash = await bcrypt.hash(password, 10);
+        const result = await db.query(
+            'INSERT INTO users (phone_number, password_hash, username, name, balance) VALUES ($1, $2, $3, $4, 0) RETURNING *',
+            [phone, hash, phone, name]
+        );
+        const user = result.rows[0];
+        const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY);
+        res.json({ token, username: user.username, balance: user.balance, name: user.name });
+    } catch (err) {
+        res.status(500).json({ error: "ምዝገባው አልተሳካም" });
+    }
+});
+
+app.post('/api/login', async (req, res) => {
+    const { phone, password } = req.body;
+    try {
+        const result = await db.query('SELECT * FROM users WHERE phone_number = $1', [phone]);
+        if (result.rows.length === 0) return res.status(404).json({ error: "ተጠቃሚው አልተገኘም" });
+        const isMatch = await bcrypt.compare(password, result.rows[0].password_hash);
+        if (!isMatch) return res.status(401).json({ error: "ስህተት" });
+        
+        const token = jwt.sign({ id: result.rows[0].id, username: result.rows[0].username }, SECRET_KEY);
+        res.json({ 
+            token, 
+            username: result.rows[0].username, 
+            balance: result.rows[0].balance,
+            name: result.rows[0].name 
+        });
+    } catch (err) { res.status(500).send(err); }
+});
+
+// Admin Route (Hidden)
+app.post('/api/admin/update-balance', async (req, res) => {
+    const { phone, balance } = req.body;
+    try {
+        const result = await db.query(
+            'UPDATE users SET balance = $1 WHERE phone_number = $2 RETURNING *',
+            [balance, phone]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ error: "ተጠቃሚው አልተገኘም" });
+        res.json({ message: "ሂሳብ በትክክል ተስተካክሏል", user: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: "ማስተካከሉ አልተሳካም" });
+    }
+});
+
 function startRoomCountdown(amount) {
     const room = rooms[amount];
     room.gameCountdown = 30;
