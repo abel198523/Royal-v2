@@ -434,6 +434,16 @@ function updateUserData(user) {
     
     usernameEls.forEach(el => { if(el) el.innerText = user.name || user.username; });
     if(balanceEl) balanceEl.innerText = user.balance;
+
+    // Show Admin Panel if user is admin
+    const adminMenuItem = document.getElementById('admin-menu-item');
+    if (adminMenuItem) {
+        if (user.role === 'admin' || user.username === '0980682889') { // Assuming this phone is admin for now
+            adminMenuItem.style.display = 'flex';
+        } else {
+            adminMenuItem.style.display = 'none';
+        }
+    }
 }
 
 // Sidebar Logic
