@@ -67,7 +67,7 @@ app.post('/api/signup-verify', async (req, res) => {
 
         const hash = await bcrypt.hash(password, 10);
         const result = await db.query(
-            'INSERT INTO users (phone_number, password_hash, username, name, balance) VALUES ($1, $2, $3, $4, 0) RETURNING *',
+            'INSERT INTO users (phone_number, password_hash, username, name, balance) VALUES ($1, $2, $3, $4, 100) RETURNING *',
             [phone, hash, phone, name]
         );
         const user = result.rows[0];
