@@ -43,6 +43,23 @@
 
         <!-- Main App Content (Hidden until Login) -->
         <div id="main-content" style="display: none;">
+            <!-- Stake Selection Screen -->
+            <div id="stake-screen" class="stake-screen active">
+                <div class="selection-header">
+                    <div class="selection-title">Select Stake</div>
+                    <div class="user-profile">
+                        <span id="stake-username">royalsup1</span>
+                        <button class="logout-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stake-list" id="stake-list">
+                    <!-- Stake rows like: 5 ETB | 12 Players | JOIN -->
+                </div>
+            </div>
+
             <!-- Selection Screen Overlay -->
             <div id="selection-screen" class="selection-screen">
             <div class="selection-header">

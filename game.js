@@ -123,6 +123,33 @@ function updateGameUI(history) {
 
 const cardsGrid = document.getElementById('cards-grid');
 const selectionScreen = document.getElementById('selection-screen');
+const stakeScreen = document.getElementById('stake-screen');
+
+const STAKES = [5, 10, 20, 30, 40, 50, 100, 200, 500];
+
+function createStakeList() {
+    const list = document.getElementById('stake-list');
+    if (!list) return;
+    list.innerHTML = '';
+    
+    STAKES.forEach(amount => {
+        const row = document.createElement('div');
+        row.className = 'stake-row';
+        row.innerHTML = `
+            <div class="stake-amount">${amount} ETB</div>
+            <div class="stake-players" id="stake-count-${amount}">0 Players</div>
+            <button class="join-btn" onclick="joinStake(${amount})">JOIN</button>
+        `;
+        list.appendChild(row);
+    });
+}
+
+window.joinStake = (amount) => {
+    // Here we will eventually check balance
+    stakeScreen.classList.remove('active');
+    selectionScreen.classList.add('active');
+    console.log(`Joined stake room: ${amount}`);
+};
 
 function generateBingoCard() {
     const card = {};
@@ -362,7 +389,11 @@ document.getElementById('verify-otp').onclick = async () => {
 };
 
 function updateUserData(user) {
-    const usernameEls = [document.getElementById('username'), document.getElementById('sel-username')];
+    const usernameEls = [
+        document.getElementById('username'), 
+        document.getElementById('sel-username'),
+        document.getElementById('stake-username')
+    ];
     const balanceEl = document.getElementById('sel-balance');
     
     usernameEls.forEach(el => { if(el) el.innerText = user.name || user.username; });
@@ -371,3 +402,4 @@ function updateUserData(user) {
 
 createBingoNumbers();
 loadCards();
+createStakeList();
