@@ -83,6 +83,23 @@
 
         <!-- Main App Content (Hidden until Login) -->
         <div id="main-content" style="display: none;">
+            <!-- Stake Screen -->
+            <div id="stake-screen" class="stake-screen active">
+                <div class="selection-header">
+                    <button id="open-menu-stake" class="menu-trigger">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                    <div class="selection-title">Select Stake</div>
+                    <div class="user-profile">
+                        <span id="stake-username">royalsup1</span>
+                    </div>
+                </div>
+
+                <div class="stake-list" id="stake-list">
+                    <!-- Stake rows injected by JS -->
+                </div>
+            </div>
+
             <!-- Profile Screen -->
             <div id="profile-screen" class="profile-screen">
                 <div class="selection-header">
@@ -137,172 +154,133 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Selection Screen -->
+            <div id="selection-screen" class="selection-screen">
                 <div class="selection-header">
-                    <button id="open-menu-stake" class="menu-trigger">
+                    <button id="open-menu-selection" class="menu-trigger">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                     </button>
-                    <div class="selection-title">Select Stake</div>
+                    <div class="selection-title">Fidel bingo</div>
                     <div class="user-profile">
-                        <span id="stake-username">royalsup1</span>
-                        <button class="logout-btn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                        </button>
+                        <span id="sel-username">royalsup1</span>
                     </div>
                 </div>
 
-                <div class="stake-list" id="stake-list">
-                    <!-- Stake rows like: 5 ETB | 12 Players | JOIN -->
+                <div class="selection-stats">
+                    <div class="sel-stat-box highlight">
+                        <span class="sel-stat-label">BALANCE</span>
+                        <span class="sel-stat-value" id="sel-balance">0</span>
+                    </div>
+                    <div class="sel-stat-box">
+                        <span class="sel-stat-label">STAKE</span>
+                        <span class="sel-stat-value" id="sel-stake-amount">-</span>
+                    </div>
+                    <div class="sel-stat-box">
+                        <span class="sel-stat-label">YOUR BOARD</span>
+                        <span class="sel-stat-value" id="sel-my-board">-</span>
+                    </div>
+                </div>
+
+                <div class="cards-container">
+                    <div class="countdown-overlay-timer">
+                        <span class="timer-label">የሚቀጥለው ጨዋታ በ፡</span>
+                        <div class="timer-value-large">⏰ <span id="selection-timer-large">30</span></div>
+                    </div>
+                    <div class="cards-grid" id="cards-grid">
+                        <!-- Cards injected by JS -->
+                    </div>
                 </div>
             </div>
 
-            <!-- Selection Screen Overlay -->
-            <div id="selection-screen" class="selection-screen">
-            <div class="selection-header">
-                <button id="open-menu-selection" class="menu-trigger">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                </button>
-                <div class="selection-title">Fidel bingo</div>
-                <div class="user-profile">
-                    <span id="sel-username">royalsup1</span>
-                    <button class="logout-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <!-- Game Screen -->
+            <div id="game-screen" class="game-screen">
+                <header>
+                    <button id="open-menu-game" class="menu-trigger">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                     </button>
-                </div>
-            </div>
-
-            <div class="error-banner">
-                <span>💰 Insufficient balance for stake</span>
-                <strong>Need: 10 | Have: 5</strong>
-            </div>
-
-            <div class="selection-stats">
-                <div class="sel-stat-box highlight">
-                    <span class="sel-stat-label">BALANCE</span>
-                    <span class="sel-stat-value" id="sel-balance">5</span>
-                </div>
-                <div class="sel-stat-box">
-                    <span class="sel-stat-label">STAKE</span>
-                    <span class="sel-stat-value">10</span>
-                </div>
-                <div class="sel-stat-box">
-                    <span class="sel-stat-label">YOUR BOARD</span>
-                    <span class="sel-stat-value" id="sel-my-board">-</span>
-                </div>
-            </div>
-
-            <div class="cards-container">
-                <div class="countdown-overlay-timer">
-                    <span class="timer-label">የሚቀጥለው ጨዋታ በ፡</span>
-                    <div class="timer-value-large">⏰ <span id="selection-timer-large">30</span></div>
-                </div>
-                <div class="cards-header">
-                    <div class="timer-badge" style="display: none;">
-                        ⏰ <span id="selection-timer">30</span>
+                    <div class="status-badge">
+                        <div class="status-dot"></div>
+                        CONNECTED
                     </div>
-                    <div class="legend">
-                        <div class="legend-item"><div class="dot green"></div> Available (196)</div>
-                        <div class="legend-item"><div class="dot red"></div> Taken (4)</div>
+                    <div class="user-profile">
+                        <span id="username">royalsup1</span>
                     </div>
-                </div>
-                <div class="cards-grid" id="cards-grid">
-                    <!-- Cards injected by JS -->
-                </div>
-            </div>
-        </div>
+                </header>
 
-        <!-- Card Preview Overlay -->
-        <div id="preview-overlay" class="preview-overlay">
-            <div class="preview-modal">
-                <div class="preview-modal-header">
-                    <h3 id="preview-card-number">Card #1</h3>
-                    <button id="close-preview" class="close-btn">×</button>
-                </div>
-                <div id="modal-card-content" class="modal-card-content">
-                    <!-- Bingo board goes here -->
-                </div>
-                <div class="preview-actions">
-                    <button id="reject-card" class="action-btn reject">Reject</button>
-                    <button id="confirm-card" class="action-btn confirm">Confirm</button>
-                </div>
-            </div>
-        </div>
-
-        <header>
-            <button id="open-menu-game" class="menu-trigger">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </button>
-            <div class="status-badge">
-                <div class="status-dot"></div>
-                CONNECTED
-            </div>
-            <div class="user-profile">
-                <span id="username">royalsup1</span>
-                <button class="logout-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                </button>
-            </div>
-        </header>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <span class="stat-label">DERASH</span>
-                <span class="stat-value" id="derash">168</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">PLAYERS</span>
-                <span class="stat-value" id="players">21</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">BET</span>
-                <span class="stat-value" id="bet-amount">10</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">CALLS</span>
-                <span class="stat-value" id="call-count">5</span>
-            </div>
-        </div>
-
-        <div class="game-layout">
-            <div class="board-container">
-                <div class="bingo-headers">
-                    <span class="h-B" data-count="2">B</span>
-                    <span class="h-I" data-count="0">I</span>
-                    <span class="h-N" data-count="2">N</span>
-                    <span class="h-G" data-count="1">G</span>
-                    <span class="h-O" data-count="0">O</span>
-                </div>
-                <div class="bingo-grid" id="bingo-board">
-                    <!-- Grid cells injected by JS -->
-                </div>
-            </div>
-
-            <div class="side-panel">
-                <div class="call-card">
-                    <span class="stat-label">CURRENT CALL</span>
-                    <div class="ball-circle" id="active-ball">N34</div>
-                    <div class="history-strip" id="recent-balls">
-                        <!-- Recent balls -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">DERASH</span>
+                        <span class="stat-value" id="derash">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">PLAYERS</span>
+                        <span class="stat-value" id="players">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">BET</span>
+                        <span class="stat-value" id="bet-amount">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">CALLS</span>
+                        <span class="stat-value" id="call-count">0</span>
                     </div>
                 </div>
 
-                <div class="auto-box">
-                    <span>Auto</span>
-                    <div class="toggle" id="auto-toggle"></div>
+                <div class="game-layout">
+                    <div class="board-container">
+                        <div class="bingo-headers">
+                            <span class="h-B">B</span>
+                            <span class="h-I">I</span>
+                            <span class="h-N">N</span>
+                            <span class="h-G">G</span>
+                            <span class="h-O">O</span>
+                        </div>
+                        <div class="bingo-grid" id="bingo-board">
+                            <!-- Grid cells injected by JS -->
+                        </div>
+                    </div>
+
+                    <div class="side-panel">
+                        <div class="call-card">
+                            <span class="stat-label">CURRENT CALL</span>
+                            <div class="ball-circle" id="active-ball">--</div>
+                            <div class="history-strip" id="recent-balls">
+                                <!-- Recent balls -->
+                            </div>
+                        </div>
+
+                        <div class="auto-box">
+                            <span>Auto</span>
+                            <div class="toggle" id="auto-toggle"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="no-board-card">
-                    <div class="no-board-title">No Board Selected</div>
-                    <div class="no-board-sub">Waiting for next game...</div>
+                <div class="footer">
+                    Total Called: <span id="progress-text">0/75</span>
+                    <div class="progress-wrap">
+                        <div class="progress-fill" id="progress-bar"></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="footer">
-            Total Called: <span id="progress-text" style="color: var(--ball-green)">5/75</span>
-            <div class="progress-wrap">
-                <div class="progress-fill" id="progress-bar"></div>
+            <!-- Card Preview Overlay -->
+            <div id="preview-overlay" class="preview-overlay">
+                <div class="preview-modal">
+                    <div class="preview-modal-header">
+                        <h3 id="preview-card-number">Card #1</h3>
+                        <button id="close-preview" class="close-btn">×</button>
+                    </div>
+                    <div id="modal-card-content" class="modal-card-content">
+                        <!-- Bingo board goes here -->
+                    </div>
+                    <div class="preview-actions">
+                        <button id="reject-card" class="action-btn reject">Reject</button>
+                        <button id="confirm-card" class="action-btn confirm">Confirm</button>
+                    </div>
+                </div>
             </div>
-        </div>
         </div><!-- End of main-content -->
     </div>
     <script src="game.js"></script>
