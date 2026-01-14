@@ -170,7 +170,7 @@ function updateGlobalStats() {
     const timers = {};
     STAKES.forEach(amount => {
         stats[amount] = rooms[amount].players.size;
-        timers[amount] = rooms[amount].gameCountdown;
+        timers[amount] = rooms[amount].gameInterval ? 'PLAYING' : rooms[amount].gameCountdown;
     });
     broadcastAll({ type: 'ROOM_STATS', stats, timers });
 }

@@ -56,10 +56,19 @@ function updateRoomStats(stats, roomTimers) {
         
         const timerEl = document.getElementById(`stake-timer-${amount}`);
         if (timerEl && roomTimers && roomTimers[amount] !== undefined) {
-            const seconds = roomTimers[amount];
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            timerEl.innerText = `⏰ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            const val = roomTimers[amount];
+            if (val === 'PLAYING') {
+                timerEl.innerText = '🎮 PLAYING';
+                timerEl.style.color = '#22c55e';
+                timerEl.style.background = 'rgba(34, 197, 94, 0.1)';
+            } else {
+                const seconds = val;
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                timerEl.innerText = `⏰ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                timerEl.style.color = '#f59e0b';
+                timerEl.style.background = 'rgba(245, 158, 11, 0.1)';
+            }
         }
     });
 }
