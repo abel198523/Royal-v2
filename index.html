@@ -83,8 +83,60 @@
 
         <!-- Main App Content (Hidden until Login) -->
         <div id="main-content" style="display: none;">
-            <!-- Stake Selection Screen -->
-            <div id="stake-screen" class="stake-screen active">
+            <!-- Profile Screen -->
+            <div id="profile-screen" class="profile-screen">
+                <div class="selection-header">
+                    <button id="open-menu-profile" class="menu-trigger">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                    <div class="selection-title">My Profile</div>
+                    <div class="user-profile">
+                        <span id="profile-username-top">royalsup1</span>
+                    </div>
+                </div>
+                <div class="profile-content">
+                    <div class="profile-info-card">
+                        <div class="profile-avatar">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        </div>
+                        <h2 id="profile-full-name">User Name</h2>
+                        <p id="profile-phone-number">0900000000</p>
+                    </div>
+                    <div class="profile-stats-grid">
+                        <div class="profile-stat-item">
+                            <span class="stat-label">Total Games</span>
+                            <span class="stat-value">0</span>
+                        </div>
+                        <div class="profile-stat-item">
+                            <span class="stat-label">Total Wins</span>
+                            <span class="stat-value">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wallet Screen -->
+            <div id="wallet-screen" class="wallet-screen">
+                <div class="selection-header">
+                    <button id="open-menu-wallet" class="menu-trigger">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                    <div class="selection-title">Wallet</div>
+                </div>
+                <div class="wallet-content">
+                    <div class="wallet-card">
+                        <span class="wallet-label">Current Balance</span>
+                        <div class="wallet-balance-row">
+                            <span class="wallet-currency">ETB</span>
+                            <span id="wallet-balance-value" class="wallet-balance">0.00</span>
+                        </div>
+                    </div>
+                    <div class="wallet-actions">
+                        <button class="wallet-btn deposit" onclick="navTo('deposit')">Deposit</button>
+                        <button class="wallet-btn withdraw" onclick="navTo('withdraw')">Withdraw</button>
+                    </div>
+                </div>
+            </div>
                 <div class="selection-header">
                     <button id="open-menu-stake" class="menu-trigger">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>

@@ -471,12 +471,18 @@ function updateUserData(user) {
     const usernameEls = [
         document.getElementById('username'), 
         document.getElementById('sel-username'),
-        document.getElementById('stake-username')
+        document.getElementById('stake-username'),
+        document.getElementById('profile-username-top'),
+        document.getElementById('profile-full-name')
     ];
     const balanceEl = document.getElementById('sel-balance');
+    const walletBalanceEl = document.getElementById('wallet-balance-value');
+    const profilePhoneEl = document.getElementById('profile-phone-number');
     
     usernameEls.forEach(el => { if(el) el.innerText = user.name || user.username; });
     if(balanceEl) balanceEl.innerText = userBalance;
+    if(walletBalanceEl) walletBalanceEl.innerText = userBalance.toFixed(2);
+    if(profilePhoneEl) profilePhoneEl.innerText = user.phone_number || user.username;
 
     // Show Admin Panel if user is admin
     const adminMenuItem = document.getElementById('admin-menu-item');
@@ -492,7 +498,7 @@ function updateUserData(user) {
 // Sidebar Logic
 const sideMenu = document.getElementById('side-menu');
 const menuOverlay = document.getElementById('menu-overlay');
-const openMenuBtns = ['open-menu-stake', 'open-menu-selection', 'open-menu-game'];
+const openMenuBtns = ['open-menu-stake', 'open-menu-selection', 'open-menu-game', 'open-menu-profile', 'open-menu-wallet'];
 const closeMenuBtn = document.getElementById('close-menu');
 
 function toggleMenu() {
@@ -510,17 +516,24 @@ if (menuOverlay) menuOverlay.onclick = toggleMenu;
 
 window.navTo = (target) => {
     console.log(`Navigating to: ${target}`);
+    // Hide all screens
+    const screens = ['stake-screen', 'selection-screen', 'profile-screen', 'wallet-screen'];
+    screens.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.classList.remove('active');
+    });
+
+    // Show target screen
+    const targetId = `${target}-screen`;
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) targetEl.classList.add('active');
+
     // Update active state in UI
     document.querySelectorAll('.menu-item').forEach(el => {
         el.classList.remove('active');
         if (el.innerText.toLowerCase().includes(target)) el.classList.add('active');
     });
     
-    // Logic for actual navigation
-    if (target === 'stake') {
-        document.getElementById('selection-screen').classList.remove('active');
-        document.getElementById('stake-screen').classList.add('active');
-    }
     toggleMenu();
 };
 
