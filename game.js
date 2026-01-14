@@ -33,6 +33,28 @@ function createBingoNumbers() {
 let currentRoom = null;
 let roomTakenCards = [];
 
+function updateCountdown(seconds) {
+    const timerEl = document.getElementById('selection-timer');
+    const timerLargeEl = document.getElementById('selection-timer-large');
+    const stakeTimerEl = document.getElementById('stake-selection-timer');
+    
+    // Also update the legend timer if it exists (the one near Available 100)
+    const legendTimerEl = document.querySelector('.timer-badge span');
+    
+    // Ensure we handle 'PLAYING' status
+    const timeStr = seconds === 'PLAYING' ? 'በጨዋታ ላይ' : seconds;
+    const timeStrWithEmoji = seconds === 'PLAYING' ? '🎮 በጨዋታ ላይ' : `⏰ ${seconds}`;
+    
+    if (timerEl) {
+        timerEl.innerText = timeStrWithEmoji;
+    }
+    if (timerLargeEl) {
+        timerLargeEl.innerText = timeStr;
+    }
+    if (stakeTimerEl) stakeTimerEl.innerText = timeStrWithEmoji;
+    if (legendTimerEl) legendTimerEl.innerText = timeStr;
+}
+
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     if (data.type === 'INIT') {
@@ -40,7 +62,7 @@ socket.onmessage = (event) => {
         roomTakenCards = data.takenCards || [];
         updateGameUI(data.history);
         if (data.isGameRunning) {
-            updateCountdown(0); // Show it's already started or playing
+            updateCountdown('PLAYING');
         } else {
             updateCountdown(data.countdown);
         }
@@ -50,11 +72,6 @@ socket.onmessage = (event) => {
     } else if (data.type === 'COUNTDOWN') {
         if (data.room === currentRoom) {
             updateCountdown(data.value);
-            // Ensure the countdown is visible if we're in the selection screen
-            if (selectionScreen.classList.contains('active')) {
-                const timerEl = document.getElementById('selection-timer');
-                if (timerEl) timerEl.innerText = `⏰ ${data.value}`;
-            }
             if (data.value <= 0) {
                 startGame();
             }
@@ -67,51 +84,13 @@ socket.onmessage = (event) => {
             createAvailableCards();
         }
         updateRoomStats(data.stats, data.timers);
+        
+        // Also update the selection timer from ROOM_STATS if we're in a room
+        if (currentRoom && data.timers[currentRoom] !== undefined) {
+            updateCountdown(data.timers[currentRoom]);
+        }
     }
 };
-
-function updateRoomStats(stats, roomTimers) {
-    Object.keys(stats).forEach(amount => {
-        const countEl = document.getElementById(`stake-count-${amount}`);
-        if (countEl) countEl.innerText = `${stats[amount]} Players`;
-        
-        const timerEl = document.getElementById(`stake-timer-${amount}`);
-        if (timerEl && roomTimers && roomTimers[amount] !== undefined) {
-            const val = roomTimers[amount];
-            if (val === 'PLAYING') {
-                timerEl.innerText = '🎮 PLAYING';
-                timerEl.style.color = '#22c55e';
-                timerEl.style.background = 'rgba(34, 197, 94, 0.1)';
-            } else {
-                const seconds = parseInt(val);
-                timerEl.innerText = `⏰ ${seconds}`;
-                timerEl.style.color = '#f59e0b';
-                timerEl.style.background = 'rgba(245, 158, 11, 0.1)';
-            }
-        }
-    });
-}
-
-function updateCountdown(seconds) {
-    const timerEl = document.getElementById('selection-timer');
-    const timerLargeEl = document.getElementById('selection-timer-large');
-    const stakeTimerEl = document.getElementById('stake-selection-timer');
-    
-    // Also update the legend timer if it exists (the one near Available 100)
-    const legendTimerEl = document.querySelector('.timer-badge span');
-    
-    const timeStr = seconds; // Just the number
-    const timeStrWithEmoji = `⏰ ${seconds}`;
-    
-    if (timerEl) {
-        timerEl.innerText = timeStrWithEmoji;
-    }
-    if (timerLargeEl) {
-        timerLargeEl.innerText = timeStr;
-    }
-    if (stakeTimerEl) stakeTimerEl.innerText = timeStrWithEmoji;
-    if (legendTimerEl) legendTimerEl.innerText = timeStr;
-}
 
 function startGame() {
     // Switch to game screen
