@@ -24,6 +24,12 @@ let players = {}; // ተሳታፊዎችን ለመያዝ
 app.post('/api/signup', async (req, res) => {
     const { phone, password, name } = req.body;
     try {
+        // Check if phone already exists
+        const existing = await db.query('SELECT id FROM users WHERE phone_number = $1', [phone]);
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ error: "ይህ ስልክ ቁጥር ቀድሞ ተመዝግቧል" });
+        }
+
         const hash = await bcrypt.hash(password, 10);
         const result = await db.query(
             'INSERT INTO users (phone_number, password_hash, username, name, balance) VALUES ($1, $2, $3, $4, 0) RETURNING *',
@@ -33,7 +39,7 @@ app.post('/api/signup', async (req, res) => {
         const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY);
         res.json({ token, username: user.username, balance: user.balance, name: user.name });
     } catch (err) {
-        console.error(err);
+        console.error('Signup error:', err);
         res.status(500).json({ error: "ምዝገባው አልተሳካም" });
     }
 });
