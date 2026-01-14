@@ -45,14 +45,22 @@ socket.onmessage = (event) => {
     } else if (data.type === 'GAME_START') {
         if (data.room === currentRoom) startGame();
     } else if (data.type === 'ROOM_STATS') {
-        updateRoomStats(data.stats);
+        updateRoomStats(data.stats, data.timers);
     }
 };
 
-function updateRoomStats(stats) {
+function updateRoomStats(stats, roomTimers) {
     Object.keys(stats).forEach(amount => {
-        const el = document.getElementById(`stake-count-${amount}`);
-        if (el) el.innerText = `${stats[amount]} Players`;
+        const countEl = document.getElementById(`stake-count-${amount}`);
+        if (countEl) countEl.innerText = `${stats[amount]} Players`;
+        
+        const timerEl = document.getElementById(`stake-timer-${amount}`);
+        if (timerEl && roomTimers && roomTimers[amount] !== undefined) {
+            const seconds = roomTimers[amount];
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            timerEl.innerText = `⏰ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
     });
 }
 
@@ -152,7 +160,10 @@ function createStakeList() {
         row.className = 'stake-row';
         row.innerHTML = `
             <div class="stake-amount">${amount} ETB</div>
-            <div class="stake-players" id="stake-count-${amount}">0 Players</div>
+            <div class="stake-info">
+                <div class="stake-players" id="stake-count-${amount}">0 Players</div>
+                <div class="stake-timer" id="stake-timer-${amount}">⏰ 0:30</div>
+            </div>
             <button class="join-btn" onclick="joinStake(${amount})">JOIN</button>
         `;
         list.appendChild(row);

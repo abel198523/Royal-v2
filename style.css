@@ -154,6 +154,22 @@ body {
     transform: scale(0.99);
 }
 
+.stake-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stake-timer {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
 .stake-amount {
     font-size: 18px;
     font-weight: 700;

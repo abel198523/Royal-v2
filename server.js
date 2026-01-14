@@ -120,6 +120,7 @@ function startRoomCountdown(amount) {
     room.countdownInterval = setInterval(() => {
         room.gameCountdown--;
         broadcastToRoom(amount, { type: 'COUNTDOWN', value: room.gameCountdown, room: amount });
+        updateGlobalStats();
         
         if (room.gameCountdown <= 0) {
             clearInterval(room.countdownInterval);
@@ -166,10 +167,12 @@ function broadcastAll(data) {
 
 function updateGlobalStats() {
     const stats = {};
+    const timers = {};
     STAKES.forEach(amount => {
         stats[amount] = rooms[amount].players.size;
+        timers[amount] = rooms[amount].gameCountdown;
     });
-    broadcastAll({ type: 'ROOM_STATS', stats });
+    broadcastAll({ type: 'ROOM_STATS', stats, timers });
 }
 
 wss.on('connection', (ws) => {
