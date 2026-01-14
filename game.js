@@ -301,6 +301,10 @@ function createAvailableCards() {
 }
 
 function showCardPreview(num) {
+    if (userBalance < currentRoom) {
+        alert("በቂ ባላንስ የልዎትም፤ እባክዎን ዲፖዚት ያድርጉ።");
+        return;
+    }
     currentSelectedCard = num;
     const cardObj = staticCards.find(c => c.id === num);
     currentCardData = cardObj ? cardObj.data : generateBingoCard();
@@ -448,7 +452,10 @@ document.getElementById('verify-otp').onclick = async () => {
     }
 };
 
+let userBalance = 0;
+
 function updateUserData(user) {
+    userBalance = parseFloat(user.balance) || 0;
     const usernameEls = [
         document.getElementById('username'), 
         document.getElementById('sel-username'),
@@ -457,7 +464,7 @@ function updateUserData(user) {
     const balanceEl = document.getElementById('sel-balance');
     
     usernameEls.forEach(el => { if(el) el.innerText = user.name || user.username; });
-    if(balanceEl) balanceEl.innerText = user.balance;
+    if(balanceEl) balanceEl.innerText = userBalance;
 
     // Show Admin Panel if user is admin
     const adminMenuItem = document.getElementById('admin-menu-item');
