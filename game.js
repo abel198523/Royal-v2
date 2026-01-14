@@ -161,6 +161,19 @@ const confirmCard = document.getElementById('confirm-card');
 let currentSelectedCard = null;
 let currentCardData = null;
 
+let staticCards = [];
+
+// Load cards from cards.json
+async function loadCards() {
+    try {
+        const response = await fetch('cards.json');
+        staticCards = await response.json();
+        createAvailableCards();
+    } catch (err) {
+        console.error('Error loading cards:', err);
+    }
+}
+
 function createAvailableCards() {
     cardsGrid.innerHTML = '';
     const takenCards = [14, 38];
@@ -180,26 +193,15 @@ function createAvailableCards() {
 
 function showCardPreview(num) {
     currentSelectedCard = num;
-    currentCardData = generateBingoCard();
+    // Get pre-generated card data from staticCards
+    const cardObj = staticCards.find(c => c.id === num);
+    currentCardData = cardObj ? cardObj.data : generateBingoCard();
+    
     previewCardNumber.innerText = `Card #${num}`;
     modalCardContent.innerHTML = '';
     modalCardContent.appendChild(createCardPreview(currentCardData));
     previewOverlay.classList.add('active');
 }
 
-closePreview.onclick = () => previewOverlay.classList.remove('active');
-rejectCard.onclick = () => previewOverlay.classList.remove('active');
-
-confirmCard.onclick = () => {
-    socket.send(JSON.stringify({ 
-        type: 'BUY_CARD', 
-        cardNumber: currentSelectedCard, 
-        cardData: currentCardData 
-    }));
-    previewOverlay.classList.remove('active');
-    // Optionally switch screens here
-    selectionScreen.classList.remove('active');
-};
-
 createBingoNumbers();
-createAvailableCards();
+loadCards();
