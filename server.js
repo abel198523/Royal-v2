@@ -24,6 +24,7 @@ let pendingOTP = {}; // Store temporary signup data
 // --- AUTH API ---
 app.post('/api/signup-request', async (req, res) => {
     const { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: "ስልክ ቁጥር ያስገቡ" });
     try {
         const existing = await db.query('SELECT id FROM users WHERE phone_number = $1', [phone]);
         if (existing.rows.length > 0) {
@@ -37,7 +38,8 @@ app.post('/api/signup-request', async (req, res) => {
         
         res.json({ message: "OTP sent" });
     } catch (err) {
-        res.status(500).json({ error: "ምዝገባው አልተሳካም" });
+        console.error('Signup Request Error:', err);
+        res.status(500).json({ error: "የሰርቨር ስህተት አጋጥሟል: " + err.message });
     }
 });
 
