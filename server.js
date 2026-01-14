@@ -237,7 +237,8 @@ wss.on('connection', (ws) => {
                     history: room.drawnBalls,
                     countdown: room.gameCountdown,
                     room: ws.room,
-                    takenCards: roomTaken
+                    takenCards: roomTaken,
+                    isGameRunning: room.gameInterval !== null
                 }));
                 updateGlobalStats();
             }

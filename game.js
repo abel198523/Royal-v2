@@ -39,7 +39,11 @@ socket.onmessage = (event) => {
         currentRoom = data.room;
         roomTakenCards = data.takenCards || [];
         updateGameUI(data.history);
-        updateCountdown(data.countdown);
+        if (data.isGameRunning) {
+            updateCountdown(0); // Show it's already started or playing
+        } else {
+            updateCountdown(data.countdown);
+        }
         createAvailableCards();
     } else if (data.type === 'NEW_BALL') {
         if (data.room === currentRoom) updateGameUI(data.history);
