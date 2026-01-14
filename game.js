@@ -193,7 +193,6 @@ function createAvailableCards() {
 
 function showCardPreview(num) {
     currentSelectedCard = num;
-    // Get pre-generated card data from staticCards
     const cardObj = staticCards.find(c => c.id === num);
     currentCardData = cardObj ? cardObj.data : generateBingoCard();
     
@@ -202,6 +201,38 @@ function showCardPreview(num) {
     modalCardContent.appendChild(createCardPreview(currentCardData));
     previewOverlay.classList.add('active');
 }
+
+closePreview.onclick = () => {
+    previewOverlay.classList.remove('active');
+    currentSelectedCard = null;
+    currentCardData = null;
+};
+
+rejectCard.onclick = () => {
+    previewOverlay.classList.remove('active');
+    currentSelectedCard = null;
+    currentCardData = null;
+};
+
+confirmCard.onclick = () => {
+    if (!currentSelectedCard || !currentCardData) return;
+    
+    socket.send(JSON.stringify({ 
+        type: 'BUY_CARD', 
+        cardNumber: currentSelectedCard, 
+        cardData: currentCardData 
+    }));
+    
+    // Update the selection screen UI
+    const myBoardLabel = document.getElementById('sel-my-board');
+    if (myBoardLabel) myBoardLabel.innerText = `#${currentSelectedCard}`;
+    
+    // Switch to game screen
+    previewOverlay.classList.remove('active');
+    selectionScreen.classList.remove('active');
+    
+    console.log('Confirmed card selection:', currentSelectedCard);
+};
 
 createBingoNumbers();
 loadCards();
