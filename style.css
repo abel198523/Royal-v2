@@ -511,6 +511,31 @@ body {
     font-weight: 700;
 }
 
+.countdown-overlay-timer {
+    text-align: center;
+    background: rgba(249, 115, 22, 0.1);
+    border: 2px solid #f97316;
+    padding: 15px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+}
+
+.timer-label {
+    font-size: 14px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.timer-value-large {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #f97316;
+    text-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+}
+
 .cards-container {
     background: #1e2533;
     border-radius: 16px;

@@ -94,6 +94,7 @@ function updateRoomStats(stats, roomTimers) {
 
 function updateCountdown(seconds) {
     const timerEl = document.getElementById('selection-timer');
+    const timerLargeEl = document.getElementById('selection-timer-large');
     const stakeTimerEl = document.getElementById('stake-selection-timer');
     
     // Also update the legend timer if it exists (the one near Available 100)
@@ -104,6 +105,9 @@ function updateCountdown(seconds) {
     
     if (timerEl) {
         timerEl.innerText = timeStrWithEmoji;
+    }
+    if (timerLargeEl) {
+        timerLargeEl.innerText = timeStr;
     }
     if (stakeTimerEl) stakeTimerEl.innerText = timeStrWithEmoji;
     if (legendTimerEl) legendTimerEl.innerText = timeStr;
