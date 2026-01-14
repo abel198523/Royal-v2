@@ -113,13 +113,15 @@ app.post('/api/admin/update-balance', async (req, res) => {
 
 function startRoomCountdown(amount) {
     const room = rooms[amount];
+    if (!room) return;
+    
     room.gameCountdown = 30;
     if (room.countdownInterval) clearInterval(room.countdownInterval);
     
     room.countdownInterval = setInterval(() => {
         room.gameCountdown--;
         
-        // Broadcast to all clients in the room
+        // Broadcast ONLY to clients in this specific room
         broadcastToRoom(amount, { 
             type: 'COUNTDOWN', 
             value: room.gameCountdown, 
@@ -136,15 +138,22 @@ function startRoomCountdown(amount) {
 
 function startRoomGame(amount) {
     const room = rooms[amount];
+    if (!room) return;
+    
     room.balls = Array.from({length: 75}, (_, i) => i + 1);
     room.drawnBalls = [];
-    // Reset room state for new game
+    
+    // Reset room-specific player data
     room.players.forEach(p => {
         p.cardNumber = null;
         p.cardData = null;
     });
     
-    broadcastToRoom(amount, { type: 'GAME_START', message: `${amount} ETB ጨዋታ ተጀምሯል!`, room: amount });
+    broadcastToRoom(amount, { 
+        type: 'GAME_START', 
+        message: `${amount} ETB ጨዋታ ተጀምሯል!`, 
+        room: amount 
+    });
 
     if (room.gameInterval) clearInterval(room.gameInterval);
     room.gameInterval = setInterval(() => {
@@ -152,10 +161,15 @@ function startRoomGame(amount) {
             const randomIndex = Math.floor(Math.random() * room.balls.length);
             const ball = room.balls.splice(randomIndex, 1)[0];
             room.drawnBalls.push(ball);
-            broadcastToRoom(amount, { type: 'NEW_BALL', ball, history: room.drawnBalls, room: amount });
+            broadcastToRoom(amount, { 
+                type: 'NEW_BALL', 
+                ball, 
+                history: room.drawnBalls, 
+                room: amount 
+            });
         } else { 
             clearInterval(room.gameInterval);
-            room.gameInterval = null; // Mark room as not playing
+            room.gameInterval = null;
             updateGlobalStats();
             setTimeout(() => startRoomCountdown(amount), 5000);
         }
