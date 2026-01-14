@@ -206,9 +206,16 @@ window.joinStake = (amount) => {
     currentRoom = amount;
     socket.send(JSON.stringify({ type: 'JOIN_ROOM', room: amount }));
     
+    // Switch to game board view
     stakeScreen.classList.remove('active');
-    selectionScreen.classList.add('active');
-    console.log(`Joined stake room: ${amount}`);
+    selectionScreen.classList.remove('active');
+    profileScreen.classList.remove('active');
+    walletScreen.classList.remove('active');
+    
+    // Ensure the main game layout is visible (it's inside main-content)
+    document.getElementById('main-content').style.display = 'block';
+    
+    console.log(`Joined stake room: ${amount}, switched to game board`);
 };
 
 function generateBingoCard() {
