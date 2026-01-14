@@ -19,16 +19,38 @@ let balls = [];
 let drawnBalls = [];
 let gameInterval;
 let players = {}; // ተሳታፊዎችን ለመያዝ
+let pendingOTP = {}; // Store temporary signup data
 
 // --- AUTH API ---
-app.post('/api/signup', async (req, res) => {
-    const { phone, password, name } = req.body;
+app.post('/api/signup-request', async (req, res) => {
+    const { phone } = req.body;
     try {
-        // Check if phone already exists
         const existing = await db.query('SELECT id FROM users WHERE phone_number = $1', [phone]);
         if (existing.rows.length > 0) {
             return res.status(400).json({ error: "ይህ ስልክ ቁጥር ቀድሞ ተመዝግቧል" });
         }
+
+        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        pendingOTP[phone] = { otp, timestamp: Date.now() };
+        
+        console.log(`\n--- OTP VERIFICATION ---\nPhone: ${phone}\nCode: ${otp}\n------------------------\n`);
+        
+        res.json({ message: "OTP sent" });
+    } catch (err) {
+        res.status(500).json({ error: "ምዝገባው አልተሳካም" });
+    }
+});
+
+app.post('/api/signup-verify', async (req, res) => {
+    const { phone, password, name, otp } = req.body;
+    try {
+        const record = pendingOTP[phone];
+        if (!record || record.otp !== otp) {
+            return res.status(400).json({ error: "የተሳሳተ የኦቲፒ ኮድ" });
+        }
+
+        // Clean up OTP
+        delete pendingOTP[phone];
 
         const hash = await bcrypt.hash(password, 10);
         const result = await db.query(
@@ -39,7 +61,6 @@ app.post('/api/signup', async (req, res) => {
         const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY);
         res.json({ token, username: user.username, balance: user.balance, name: user.name });
     } catch (err) {
-        console.error('Signup error:', err);
         res.status(500).json({ error: "ምዝገባው አልተሳካም" });
     }
 });

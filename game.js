@@ -277,17 +277,53 @@ document.getElementById('do-login').onclick = async () => {
     }
 };
 
+let signupData = null;
+
 document.getElementById('do-signup').onclick = async () => {
     const name = document.getElementById('signup-name').value;
     const phone = document.getElementById('signup-phone').value;
     const password = document.getElementById('signup-pass').value;
     const errorEl = document.getElementById('auth-error');
 
+    if (!name || !phone || !password) {
+        errorEl.innerText = 'Please fill all fields';
+        return;
+    }
+
     try {
-        const res = await fetch('/api/signup', {
+        const res = await fetch('/api/signup-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, phone, password })
+            body: JSON.stringify({ phone })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            signupData = { name, phone, password };
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('otp-form').style.display = 'block';
+            errorEl.innerText = '';
+        } else {
+            errorEl.innerText = data.error || 'Signup request failed';
+        }
+    } catch (err) {
+        errorEl.innerText = 'Connection error';
+    }
+};
+
+document.getElementById('verify-otp').onclick = async () => {
+    const otp = document.getElementById('otp-code').value;
+    const errorEl = document.getElementById('auth-error');
+
+    if (!otp || otp.length !== 4) {
+        errorEl.innerText = 'Enter 4-digit code';
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/signup-verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...signupData, otp })
         });
         const data = await res.json();
         if (res.ok) {
@@ -297,7 +333,7 @@ document.getElementById('do-signup').onclick = async () => {
             document.getElementById('main-content').style.display = 'block';
             document.getElementById('selection-screen').classList.add('active');
         } else {
-            errorEl.innerText = data.error || 'Signup failed';
+            errorEl.innerText = data.error || 'Verification failed';
         }
     } catch (err) {
         errorEl.innerText = 'Connection error';
