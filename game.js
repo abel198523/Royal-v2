@@ -46,11 +46,14 @@ socket.onmessage = (event) => {
 
 function updateCountdown(seconds) {
     const timerEl = document.getElementById('selection-timer');
-    if (timerEl) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        timerEl.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    }
+    const stakeTimerEl = document.getElementById('stake-selection-timer');
+    
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    const timeStr = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    
+    if (timerEl) timerEl.innerText = timeStr;
+    if (stakeTimerEl) stakeTimerEl.innerText = timeStr;
 }
 
 function startGame() {
