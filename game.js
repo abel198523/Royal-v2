@@ -93,12 +93,17 @@ function updateCountdown(seconds) {
     const timerEl = document.getElementById('selection-timer');
     const stakeTimerEl = document.getElementById('stake-selection-timer');
     
-    const timeStr = `⏰ ${seconds}`;
+    // Also update the legend timer if it exists (the one near Available 100)
+    const legendTimerEl = document.querySelector('.timer-badge span');
+    
+    const timeStr = seconds; // Just the number
+    const timeStrWithEmoji = `⏰ ${seconds}`;
     
     if (timerEl) {
-        timerEl.innerText = timeStr;
+        timerEl.innerText = timeStrWithEmoji;
     }
-    if (stakeTimerEl) stakeTimerEl.innerText = timeStr;
+    if (stakeTimerEl) stakeTimerEl.innerText = timeStrWithEmoji;
+    if (legendTimerEl) legendTimerEl.innerText = timeStr;
 }
 
 function startGame() {
