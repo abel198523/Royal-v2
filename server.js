@@ -118,6 +118,9 @@ function startRoomCountdown(amount) {
     room.gameCountdown = 30;
     if (room.countdownInterval) clearInterval(room.countdownInterval);
     
+    // Initial update to sync all clients immediately
+    updateGlobalStats();
+
     room.countdownInterval = setInterval(() => {
         room.gameCountdown--;
         
@@ -127,6 +130,9 @@ function startRoomCountdown(amount) {
             value: room.gameCountdown, 
             room: amount 
         });
+
+        // Update global stats for all clients to see the timer on selection screen
+        updateGlobalStats();
 
         if (room.gameCountdown <= 0) {
             clearInterval(room.countdownInterval);

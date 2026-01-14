@@ -74,9 +74,7 @@ function updateRoomStats(stats, roomTimers) {
                 timerEl.style.background = 'rgba(34, 197, 94, 0.1)';
             } else {
                 const seconds = parseInt(val);
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                timerEl.innerText = `⏰ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                timerEl.innerText = `⏰ ${seconds}`;
                 timerEl.style.color = '#f59e0b';
                 timerEl.style.background = 'rgba(245, 158, 11, 0.1)';
             }
@@ -88,9 +86,7 @@ function updateCountdown(seconds) {
     const timerEl = document.getElementById('selection-timer');
     const stakeTimerEl = document.getElementById('stake-selection-timer');
     
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    const timeStr = `⏰ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    const timeStr = `⏰ ${seconds}`;
     
     if (timerEl) {
         timerEl.innerText = timeStr;
