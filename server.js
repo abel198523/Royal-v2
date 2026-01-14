@@ -132,6 +132,12 @@ function startRoomGame(amount) {
     const room = rooms[amount];
     room.balls = Array.from({length: 75}, (_, i) => i + 1);
     room.drawnBalls = [];
+    // Reset room state for new game
+    room.players.forEach(p => {
+        p.cardNumber = null;
+        p.cardData = null;
+    });
+    
     broadcastToRoom(amount, { type: 'GAME_START', message: `${amount} ETB ጨዋታ ተጀምሯል!`, room: amount });
 
     if (room.gameInterval) clearInterval(room.gameInterval);
@@ -143,6 +149,8 @@ function startRoomGame(amount) {
             broadcastToRoom(amount, { type: 'NEW_BALL', ball, history: room.drawnBalls, room: amount });
         } else { 
             clearInterval(room.gameInterval);
+            room.gameInterval = null; // Mark room as not playing
+            updateGlobalStats();
             setTimeout(() => startRoomCountdown(amount), 5000);
         }
     }, 5000);

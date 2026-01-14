@@ -97,6 +97,7 @@ function updateCountdown(seconds) {
 function startGame() {
     // Switch to game screen
     selectionScreen.classList.remove('active');
+    stakeScreen.classList.remove('active'); // Ensure both are closed
     console.log('Game started, switching to game board');
 }
 
