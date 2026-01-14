@@ -31,13 +31,16 @@ function createBingoNumbers() {
 }
 
 let currentRoom = null;
+let roomTakenCards = [];
 
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     if (data.type === 'INIT') {
         currentRoom = data.room;
+        roomTakenCards = data.takenCards || [];
         updateGameUI(data.history);
         updateCountdown(data.countdown);
+        createAvailableCards();
     } else if (data.type === 'NEW_BALL') {
         if (data.room === currentRoom) updateGameUI(data.history);
     } else if (data.type === 'COUNTDOWN') {
@@ -45,6 +48,10 @@ socket.onmessage = (event) => {
     } else if (data.type === 'GAME_START') {
         if (data.room === currentRoom) startGame();
     } else if (data.type === 'ROOM_STATS') {
+        if (data.takenCards && data.takenCards[currentRoom]) {
+            roomTakenCards = data.takenCards[currentRoom];
+            createAvailableCards();
+        }
         updateRoomStats(data.stats, data.timers);
     }
 };
@@ -264,12 +271,24 @@ async function loadCards() {
 }
 
 function createAvailableCards() {
+    const cardsGrid = document.getElementById('cards-grid');
+    if (!cardsGrid) return;
     cardsGrid.innerHTML = '';
-    const takenCards = [14, 38];
+    
+    // Update legend counts
+    const availableCount = 100 - roomTakenCards.length;
+    const takenCount = roomTakenCards.length;
+    
+    const legendAvailable = document.querySelector('.legend-item:nth-child(1)');
+    const legendTaken = document.querySelector('.legend-item:nth-child(2)');
+    
+    if (legendAvailable) legendAvailable.innerHTML = `<div class="dot green"></div> Available (${availableCount})`;
+    if (legendTaken) legendTaken.innerHTML = `<div class="dot red"></div> Taken (${takenCount})`;
+
     for (let i = 1; i <= 100; i++) {
         const card = document.createElement('div');
         card.className = 'card-item';
-        if (takenCards.includes(i)) card.classList.add('taken');
+        if (roomTakenCards.includes(i)) card.classList.add('taken');
         card.innerText = i;
         
         card.onclick = () => {

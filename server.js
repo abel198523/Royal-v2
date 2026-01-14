@@ -167,13 +167,21 @@ function broadcastAll(data) {
 function updateGlobalStats() {
     const stats = {};
     const timers = {};
+    const takenCards = {};
     STAKES.forEach(amount => {
         if (rooms[amount]) {
             stats[amount] = rooms[amount].players.size;
             timers[amount] = rooms[amount].gameInterval ? 'PLAYING' : rooms[amount].gameCountdown;
+            
+            // Collect taken card numbers for this room
+            const roomTaken = [];
+            rooms[amount].players.forEach(p => {
+                if (p.cardNumber) roomTaken.push(p.cardNumber);
+            });
+            takenCards[amount] = roomTaken;
         }
     });
-    broadcastAll({ type: 'ROOM_STATS', stats, timers });
+    broadcastAll({ type: 'ROOM_STATS', stats, timers, takenCards });
 }
 
 wss.on('connection', (ws) => {
@@ -190,18 +198,27 @@ wss.on('connection', (ws) => {
             const room = rooms[ws.room];
             if (room) {
                 room.players.add(ws);
+                // Also get taken cards for this specific room
+                const roomTaken = [];
+                room.players.forEach(p => {
+                    if (p.cardNumber) roomTaken.push(p.cardNumber);
+                });
+                
                 ws.send(JSON.stringify({ 
                     type: 'INIT', 
                     history: room.drawnBalls,
                     countdown: room.gameCountdown,
-                    room: ws.room
+                    room: ws.room,
+                    takenCards: roomTaken
                 }));
                 updateGlobalStats();
             }
         }
         
         if (data.type === 'BUY_CARD') {
+            ws.cardNumber = data.cardNumber;
             console.log(`Room ${ws.room}: Card ${data.cardNumber} bought`);
+            updateGlobalStats();
         }
     });
 
