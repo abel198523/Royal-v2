@@ -48,7 +48,14 @@ socket.onmessage = (event) => {
     } else if (data.type === 'NEW_BALL') {
         if (data.room === currentRoom) updateGameUI(data.history);
     } else if (data.type === 'COUNTDOWN') {
-        if (data.room === currentRoom) updateCountdown(data.value);
+        if (data.room === currentRoom) {
+            updateCountdown(data.value);
+            // Ensure the countdown is visible if we're in the selection screen
+            if (selectionScreen.classList.contains('active')) {
+                const timerEl = document.getElementById('selection-timer');
+                if (timerEl) timerEl.innerText = `⏰ ${data.value}`;
+            }
+        }
     } else if (data.type === 'GAME_START') {
         if (data.room === currentRoom) startGame();
     } else if (data.type === 'ROOM_STATS') {

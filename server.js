@@ -161,6 +161,9 @@ function startRoomGame(amount) {
         room: amount 
     });
 
+    // Notify clients that game has started
+    updateGlobalStats();
+
     if (room.gameInterval) clearInterval(room.gameInterval);
     room.gameInterval = setInterval(() => {
         if (room.balls.length > 0) {
