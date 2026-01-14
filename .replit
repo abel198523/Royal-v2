@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "postgresql-16"]
+modules = ["nodejs-20", "web", "postgresql-16", "python-3.11"]
 [agent]
 expertMode = true
 
@@ -17,6 +17,10 @@ author = "agent"
 task = "workflow.run"
 args = "Bingo Server"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Flask Wallet App"
+
 [[workflows.workflow]]
 name = "Bingo Server"
 author = "agent"
@@ -29,9 +33,25 @@ waitForPort = 5000
 [workflows.workflow.metadata]
 outputType = "webview"
 
+[[workflows.workflow]]
+name = "Flask Wallet App"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
+waitForPort = 8000
+
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 8000
+externalPort = 8000
 
 [deployment]
 deploymentTarget = "autoscale"
