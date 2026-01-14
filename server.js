@@ -168,8 +168,10 @@ function updateGlobalStats() {
     const stats = {};
     const timers = {};
     STAKES.forEach(amount => {
-        stats[amount] = rooms[amount].players.size;
-        timers[amount] = rooms[amount].gameInterval ? 'PLAYING' : rooms[amount].gameCountdown;
+        if (rooms[amount]) {
+            stats[amount] = rooms[amount].players.size;
+            timers[amount] = rooms[amount].gameInterval ? 'PLAYING' : rooms[amount].gameCountdown;
+        }
     });
     broadcastAll({ type: 'ROOM_STATS', stats, timers });
 }

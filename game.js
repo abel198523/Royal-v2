@@ -62,7 +62,7 @@ function updateRoomStats(stats, roomTimers) {
                 timerEl.style.color = '#22c55e';
                 timerEl.style.background = 'rgba(34, 197, 94, 0.1)';
             } else {
-                const seconds = val;
+                const seconds = parseInt(val);
                 const mins = Math.floor(seconds / 60);
                 const secs = seconds % 60;
                 timerEl.innerText = `⏰ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
