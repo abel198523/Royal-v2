@@ -111,14 +111,18 @@ function updateCountdown(seconds) {
 
 function startGame() {
     // Switch to game screen
-    selectionScreen.classList.remove('active');
-    stakeScreen.classList.remove('active');
-    profileScreen.classList.remove('active');
-    walletScreen.classList.remove('active');
+    if (selectionScreen) selectionScreen.classList.remove('active');
+    if (stakeScreen) stakeScreen.classList.remove('active');
+    if (profileScreen) profileScreen.classList.remove('active');
+    if (walletScreen) walletScreen.classList.remove('active');
     
     // Reset any selection UI
     const myBoardLabel = document.getElementById('sel-my-board');
     if (myBoardLabel) myBoardLabel.innerText = '-';
+    
+    // Make sure main content is visible
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) mainContent.style.display = 'block';
     
     console.log('Game started, showing game board');
 }
@@ -223,10 +227,11 @@ window.joinStake = (amount) => {
         if (el) el.classList.remove('active');
     });
     
-    selectionScreen.classList.add('active');
+    if (selectionScreen) selectionScreen.classList.add('active');
     
     // Ensure the main game layout is hidden while selecting cards
-    document.getElementById('main-content').style.display = 'block';
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) mainContent.style.display = 'block';
     
     console.log(`Joined stake room: ${amount}, switched to card selection`);
 };
