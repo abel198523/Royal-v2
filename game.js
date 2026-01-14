@@ -55,6 +55,9 @@ socket.onmessage = (event) => {
                 const timerEl = document.getElementById('selection-timer');
                 if (timerEl) timerEl.innerText = `⏰ ${data.value}`;
             }
+            if (data.value <= 0) {
+                startGame();
+            }
         }
     } else if (data.type === 'GAME_START') {
         if (data.room === currentRoom) startGame();
@@ -109,8 +112,15 @@ function updateCountdown(seconds) {
 function startGame() {
     // Switch to game screen
     selectionScreen.classList.remove('active');
-    stakeScreen.classList.remove('active'); // Ensure both are closed
-    console.log('Game started, switching to game board');
+    stakeScreen.classList.remove('active');
+    profileScreen.classList.remove('active');
+    walletScreen.classList.remove('active');
+    
+    // Reset any selection UI
+    const myBoardLabel = document.getElementById('sel-my-board');
+    if (myBoardLabel) myBoardLabel.innerText = '-';
+    
+    console.log('Game started, showing game board');
 }
 
 function getBallLetter(num) {
