@@ -8,8 +8,33 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Auth Screens -->
+        <div id="auth-screen" class="auth-screen active">
+            <div class="auth-box">
+                <h1 class="auth-logo">FIDEL BINGO</h1>
+                
+                <div id="login-form">
+                    <h2>Login</h2>
+                    <input type="text" id="login-phone" placeholder="Phone Number">
+                    <input type="password" id="login-pass" placeholder="Password">
+                    <button id="do-login" class="auth-btn">Login</button>
+                    <p>No account? <a href="#" onclick="showSignup()">Sign up</a></p>
+                </div>
+
+                <div id="signup-form" style="display: none;">
+                    <h2>Sign Up</h2>
+                    <input type="text" id="signup-name" placeholder="Full Name">
+                    <input type="text" id="signup-phone" placeholder="Phone Number">
+                    <input type="password" id="signup-pass" placeholder="Password">
+                    <button id="do-signup" class="auth-btn signup">Register</button>
+                    <p>Have an account? <a href="#" onclick="showLogin()">Login</a></p>
+                </div>
+                <div id="auth-error" class="auth-error"></div>
+            </div>
+        </div>
+
         <!-- Selection Screen Overlay -->
-        <div id="selection-screen" class="selection-screen active">
+        <div id="selection-screen" class="selection-screen">
             <div class="selection-header">
                 <div class="selection-title">Fidel bingo</div>
                 <div class="user-profile">

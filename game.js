@@ -234,5 +234,81 @@ confirmCard.onclick = () => {
     console.log('Confirmed card selection:', currentSelectedCard);
 };
 
+// Auth Screen logic
+function showSignup() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('signup-form').style.display = 'block';
+    document.getElementById('auth-error').innerText = '';
+}
+
+function showLogin() {
+    document.getElementById('signup-form').style.display = 'none';
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('auth-error').innerText = '';
+}
+
+// Attach to window for onclick handlers in HTML
+window.showSignup = showSignup;
+window.showLogin = showLogin;
+
+document.getElementById('do-login').onclick = async () => {
+    const phone = document.getElementById('login-phone').value;
+    const password = document.getElementById('login-pass').value;
+    const errorEl = document.getElementById('auth-error');
+
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('bingo_token', data.token);
+            updateUserData(data);
+            document.getElementById('auth-screen').classList.remove('active');
+            document.getElementById('selection-screen').classList.add('active');
+        } else {
+            errorEl.innerText = data.error || 'Login failed';
+        }
+    } catch (err) {
+        errorEl.innerText = 'Connection error';
+    }
+};
+
+document.getElementById('do-signup').onclick = async () => {
+    const name = document.getElementById('signup-name').value;
+    const phone = document.getElementById('signup-phone').value;
+    const password = document.getElementById('signup-pass').value;
+    const errorEl = document.getElementById('auth-error');
+
+    try {
+        const res = await fetch('/api/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, phone, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('bingo_token', data.token);
+            updateUserData(data);
+            document.getElementById('auth-screen').classList.remove('active');
+            document.getElementById('selection-screen').classList.add('active');
+        } else {
+            errorEl.innerText = data.error || 'Signup failed';
+        }
+    } catch (err) {
+        errorEl.innerText = 'Connection error';
+    }
+};
+
+function updateUserData(user) {
+    const usernameEls = [document.getElementById('username'), document.getElementById('sel-username')];
+    const balanceEl = document.getElementById('sel-balance');
+    
+    usernameEls.forEach(el => { if(el) el.innerText = user.name || user.username; });
+    if(balanceEl) balanceEl.innerText = user.balance;
+}
+
 createBingoNumbers();
 loadCards();

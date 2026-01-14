@@ -21,6 +21,23 @@ let gameInterval;
 let players = {}; // ተሳታፊዎችን ለመያዝ
 
 // --- AUTH API ---
+app.post('/api/signup', async (req, res) => {
+    const { phone, password, name } = req.body;
+    try {
+        const hash = await bcrypt.hash(password, 10);
+        const result = await db.query(
+            'INSERT INTO users (phone_number, password_hash, username, name, balance) VALUES ($1, $2, $3, $4, 0) RETURNING *',
+            [phone, hash, phone, name]
+        );
+        const user = result.rows[0];
+        const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY);
+        res.json({ token, username: user.username, balance: user.balance, name: user.name });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "ምዝገባው አልተሳካም" });
+    }
+});
+
 app.post('/api/login', async (req, res) => {
     const { phone, password } = req.body;
     try {
@@ -30,8 +47,28 @@ app.post('/api/login', async (req, res) => {
         if (!isMatch) return res.status(401).json({ error: "ስህተት" });
         
         const token = jwt.sign({ id: result.rows[0].id, username: result.rows[0].username }, SECRET_KEY);
-        res.json({ token, username: result.rows[0].username, balance: result.rows[0].balance });
+        res.json({ 
+            token, 
+            username: result.rows[0].username, 
+            balance: result.rows[0].balance,
+            name: result.rows[0].name 
+        });
     } catch (err) { res.status(500).send(err); }
+});
+
+// Admin Route (Hidden)
+app.post('/api/admin/update-balance', async (req, res) => {
+    const { phone, balance } = req.body;
+    try {
+        const result = await db.query(
+            'UPDATE users SET balance = $1 WHERE phone_number = $2 RETURNING *',
+            [balance, phone]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ error: "ተጠቃሚው አልተገኘም" });
+        res.json({ message: "ሂሳብ በትክክል ተስተካክሏል", user: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: "ማስተካከሉ አልተሳካም" });
+    }
 });
 
 // --- BINGO LOGIC ---
