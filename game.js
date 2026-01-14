@@ -267,6 +267,7 @@ document.getElementById('do-login').onclick = async () => {
             localStorage.setItem('bingo_token', data.token);
             updateUserData(data);
             document.getElementById('auth-screen').classList.remove('active');
+            document.getElementById('main-content').style.display = 'block';
             document.getElementById('selection-screen').classList.add('active');
         } else {
             errorEl.innerText = data.error || 'Login failed';
@@ -293,6 +294,7 @@ document.getElementById('do-signup').onclick = async () => {
             localStorage.setItem('bingo_token', data.token);
             updateUserData(data);
             document.getElementById('auth-screen').classList.remove('active');
+            document.getElementById('main-content').style.display = 'block';
             document.getElementById('selection-screen').classList.add('active');
         } else {
             errorEl.innerText = data.error || 'Signup failed';
