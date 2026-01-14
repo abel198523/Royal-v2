@@ -8,6 +8,38 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <div id="side-menu" class="side-menu">
+            <div class="menu-header">
+                <div class="menu-logo">FIDEL BINGO</div>
+                <button id="close-menu" class="close-menu-btn">×</button>
+            </div>
+            <div class="menu-items">
+                <a href="#" class="menu-item active" onclick="navTo('stake')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="menu-item" onclick="navTo('wallet')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M7 15h0M2 9.5h20"></path></svg>
+                    <span>Wallet</span>
+                </a>
+                <a href="#" class="menu-item" onclick="navTo('history')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span>Game History</span>
+                </a>
+                <a href="#" class="menu-item" onclick="navTo('profile')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <span>Profile</span>
+                </a>
+                <div class="menu-divider"></div>
+                <a href="#" class="menu-item logout" onclick="logout()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        <div id="menu-overlay" class="menu-overlay"></div>
+
         <!-- Auth Screen (Full Page Login) -->
         <div id="auth-screen" class="auth-screen active">
             <div class="auth-box">
@@ -46,6 +78,9 @@
             <!-- Stake Selection Screen -->
             <div id="stake-screen" class="stake-screen active">
                 <div class="selection-header">
+                    <button id="open-menu-stake" class="menu-trigger">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
                     <div class="selection-title">Select Stake</div>
                     <div class="user-profile">
                         <span id="stake-username">royalsup1</span>
@@ -63,6 +98,9 @@
             <!-- Selection Screen Overlay -->
             <div id="selection-screen" class="selection-screen">
             <div class="selection-header">
+                <button id="open-menu-selection" class="menu-trigger">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
                 <div class="selection-title">Fidel bingo</div>
                 <div class="user-profile">
                     <span id="sel-username">royalsup1</span>
@@ -126,6 +164,9 @@
         </div>
 
         <header>
+            <button id="open-menu-game" class="menu-trigger">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
             <div class="status-badge">
                 <div class="status-dot"></div>
                 CONNECTED

@@ -436,6 +436,46 @@ function updateUserData(user) {
     if(balanceEl) balanceEl.innerText = user.balance;
 }
 
+// Sidebar Logic
+const sideMenu = document.getElementById('side-menu');
+const menuOverlay = document.getElementById('menu-overlay');
+const openMenuBtns = ['open-menu-stake', 'open-menu-selection', 'open-menu-game'];
+const closeMenuBtn = document.getElementById('close-menu');
+
+function toggleMenu() {
+    sideMenu.classList.toggle('active');
+    menuOverlay.classList.toggle('active');
+}
+
+openMenuBtns.forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.onclick = toggleMenu;
+});
+
+if (closeMenuBtn) closeMenuBtn.onclick = toggleMenu;
+if (menuOverlay) menuOverlay.onclick = toggleMenu;
+
+window.navTo = (target) => {
+    console.log(`Navigating to: ${target}`);
+    // Update active state in UI
+    document.querySelectorAll('.menu-item').forEach(el => {
+        el.classList.remove('active');
+        if (el.innerText.toLowerCase().includes(target)) el.classList.add('active');
+    });
+    
+    // Logic for actual navigation
+    if (target === 'stake') {
+        document.getElementById('selection-screen').classList.remove('active');
+        document.getElementById('stake-screen').classList.add('active');
+    }
+    toggleMenu();
+};
+
+window.logout = () => {
+    localStorage.removeItem('bingo_token');
+    location.reload();
+};
+
 createBingoNumbers();
 loadCards();
 createStakeList();
