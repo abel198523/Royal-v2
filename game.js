@@ -30,19 +30,31 @@ function createBingoNumbers() {
     }
 }
 
+let currentRoom = null;
+
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     if (data.type === 'INIT') {
+        currentRoom = data.room;
         updateGameUI(data.history);
         updateCountdown(data.countdown);
     } else if (data.type === 'NEW_BALL') {
-        updateGameUI(data.history);
+        if (data.room === currentRoom) updateGameUI(data.history);
     } else if (data.type === 'COUNTDOWN') {
-        updateCountdown(data.value);
+        if (data.room === currentRoom) updateCountdown(data.value);
     } else if (data.type === 'GAME_START') {
-        startGame();
+        if (data.room === currentRoom) startGame();
+    } else if (data.type === 'ROOM_STATS') {
+        updateRoomStats(data.stats);
     }
 };
+
+function updateRoomStats(stats) {
+    Object.keys(stats).forEach(amount => {
+        const el = document.getElementById(`stake-count-${amount}`);
+        if (el) el.innerText = `${stats[amount]} Players`;
+    });
+}
 
 function updateCountdown(seconds) {
     const timerEl = document.getElementById('selection-timer');
@@ -149,6 +161,9 @@ function createStakeList() {
 
 window.joinStake = (amount) => {
     // Here we will eventually check balance
+    currentRoom = amount;
+    socket.send(JSON.stringify({ type: 'JOIN_ROOM', room: amount }));
+    
     stakeScreen.classList.remove('active');
     selectionScreen.classList.add('active');
     console.log(`Joined stake room: ${amount}`);
