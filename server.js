@@ -118,9 +118,6 @@ function startRoomCountdown(amount) {
     room.gameCountdown = 30;
     if (room.countdownInterval) clearInterval(room.countdownInterval);
     
-    // Initial update to sync all clients immediately
-    updateGlobalStats();
-
     room.countdownInterval = setInterval(() => {
         room.gameCountdown--;
         
@@ -131,13 +128,21 @@ function startRoomCountdown(amount) {
             room: amount 
         });
 
-        // Update global stats for all clients to see the timer on selection screen
+        // Update global stats for all clients
         updateGlobalStats();
 
         if (room.gameCountdown <= 0) {
             clearInterval(room.countdownInterval);
             room.countdownInterval = null;
-            startRoomGame(amount);
+            
+            // If there are players with cards, start the game
+            const playersWithCards = Array.from(room.players).filter(p => p.cardNumber);
+            if (playersWithCards.length > 0) {
+                startRoomGame(amount);
+            } else {
+                // No players with cards, just restart countdown immediately
+                startRoomCountdown(amount);
+            }
         }
     }, 1000);
 }
@@ -149,19 +154,12 @@ function startRoomGame(amount) {
     room.balls = Array.from({length: 75}, (_, i) => i + 1);
     room.drawnBalls = [];
     
-    // Reset room-specific player data
-    room.players.forEach(p => {
-        p.cardNumber = null;
-        p.cardData = null;
-    });
-    
     broadcastToRoom(amount, { 
         type: 'GAME_START', 
         message: `${amount} ETB ጨዋታ ተጀምሯል!`, 
         room: amount 
     });
 
-    // Notify clients that game has started
     updateGlobalStats();
 
     if (room.gameInterval) clearInterval(room.gameInterval);
@@ -179,7 +177,15 @@ function startRoomGame(amount) {
         } else { 
             clearInterval(room.gameInterval);
             room.gameInterval = null;
+            
+            // Reset player card data after game ends
+            room.players.forEach(p => {
+                p.cardNumber = null;
+                p.cardData = null;
+            });
+            
             updateGlobalStats();
+            // Wait 5s then restart the continuous countdown
             setTimeout(() => startRoomCountdown(amount), 5000);
         }
     }, 5000);
