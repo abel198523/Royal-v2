@@ -32,10 +32,32 @@ function createBingoNumbers() {
 
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    if (data.type === 'INIT' || data.type === 'NEW_BALL') {
+    if (data.type === 'INIT') {
         updateGameUI(data.history);
+        updateCountdown(data.countdown);
+    } else if (data.type === 'NEW_BALL') {
+        updateGameUI(data.history);
+    } else if (data.type === 'COUNTDOWN') {
+        updateCountdown(data.value);
+    } else if (data.type === 'GAME_START') {
+        startGame();
     }
 };
+
+function updateCountdown(seconds) {
+    const timerEl = document.getElementById('selection-timer');
+    if (timerEl) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        timerEl.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+}
+
+function startGame() {
+    // Switch to game screen
+    selectionScreen.classList.remove('active');
+    console.log('Game started, switching to game board');
+}
 
 function getBallLetter(num) {
     if (num <= 15) return 'B';
@@ -227,11 +249,10 @@ confirmCard.onclick = () => {
     const myBoardLabel = document.getElementById('sel-my-board');
     if (myBoardLabel) myBoardLabel.innerText = `#${currentSelectedCard}`;
     
-    // Switch to game screen
+    // Just close preview, wait for timer to start game
     previewOverlay.classList.remove('active');
-    selectionScreen.classList.remove('active');
     
-    console.log('Confirmed card selection:', currentSelectedCard);
+    console.log('Confirmed card selection, waiting for game start:', currentSelectedCard);
 };
 
 // Auth Screen logic

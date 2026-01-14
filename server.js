@@ -20,6 +20,8 @@ let drawnBalls = [];
 let gameInterval;
 let players = {}; // ተሳታፊዎችን ለመያዝ
 let pendingOTP = {}; // Store temporary signup data
+let gameCountdown = 30;
+let countdownInterval;
 
 // --- AUTH API ---
 app.post('/api/signup-request', async (req, res) => {
@@ -101,19 +103,38 @@ app.post('/api/admin/update-balance', async (req, res) => {
 });
 
 // --- BINGO LOGIC ---
+function startCountdown() {
+    gameCountdown = 30;
+    if (countdownInterval) clearInterval(countdownInterval);
+    
+    countdownInterval = setInterval(() => {
+        gameCountdown--;
+        broadcast({ type: 'COUNTDOWN', value: gameCountdown });
+        
+        if (gameCountdown <= 0) {
+            clearInterval(countdownInterval);
+            startNewGame();
+        }
+    }, 1000);
+}
+
 function startNewGame() {
     balls = Array.from({length: 75}, (_, i) => i + 1);
     drawnBalls = [];
     players = {}; 
     broadcast({ type: 'GAME_START', message: "አዲስ ጨዋታ ተጀምሯል!" });
 
+    if (gameInterval) clearInterval(gameInterval);
     gameInterval = setInterval(() => {
         if (balls.length > 0) {
             const randomIndex = Math.floor(Math.random() * balls.length);
             const ball = balls.splice(randomIndex, 1)[0];
             drawnBalls.push(ball);
             broadcast({ type: 'NEW_BALL', ball, history: drawnBalls });
-        } else { clearInterval(gameInterval); }
+        } else { 
+            clearInterval(gameInterval);
+            setTimeout(startCountdown, 5000); // Wait 5s before next countdown
+        }
     }, 5000);
 }
 
@@ -124,7 +145,11 @@ function broadcast(data) {
 }
 
 wss.on('connection', (ws) => {
-    ws.send(JSON.stringify({ type: 'INIT', history: drawnBalls }));
+    ws.send(JSON.stringify({ 
+        type: 'INIT', 
+        history: drawnBalls,
+        countdown: gameCountdown 
+    }));
     
     ws.on('message', async (message) => {
         const data = JSON.parse(message);
@@ -138,5 +163,5 @@ wss.on('connection', (ws) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
-    startNewGame();
+    startCountdown();
 });
