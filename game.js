@@ -75,14 +75,21 @@ function updateCountdown(seconds) {
     }
     if (stakeTimerEl) stakeTimerEl.innerText = timeStrWithEmoji;
     if (legendTimerEl) legendTimerEl.innerText = timeStr;
+}
 
-    // If timer reaches 0 or it's playing, ensure myGameCard is handled
-    if (seconds <= 0 || seconds === 'PLAYING') {
-        // We'll let the server trigger GAME_START or handle it via logic
+// Load cards from cards.json
+async function loadCards() {
+    try {
+        const response = await fetch('cards.json');
+        staticCards = await response.json();
+        createAvailableCards();
+    } catch (err) {
+        console.error('Error loading cards:', err);
     }
 }
 
-// Global variables (already cleaned up duplicates)
+// Global variables
+let staticCards = [];
 let myGameCard = null;
 let currentSelectedCard = null;
 let currentCardData = null;
