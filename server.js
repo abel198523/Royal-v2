@@ -105,7 +105,8 @@ const adminOnly = (req, res, next) => {
     if (!token) return res.status(401).json({ error: "ያልተፈቀደ ሙከራ" });
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        if (decoded.is_admin) {
+        // ጥብቅ ቁጥጥር፡ በስልክ ቁጥሩ ብቻ አድሚን መሆኑን ማረጋገጥ
+        if (decoded.is_admin && decoded.username === '0980682889') {
             req.user = decoded;
             next();
         } else {

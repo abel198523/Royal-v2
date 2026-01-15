@@ -587,7 +587,8 @@ function updateUserData(user) {
     // Show Admin Panel if user is admin
     const adminMenuItem = document.getElementById('admin-menu-item');
     if (adminMenuItem) {
-        if (user.is_admin) {
+        // የፊት ለፊት ገጽታ ላይም በስልክ ቁጥሩ ብቻ እንዲታይ ማድረግ
+        if (user.is_admin && (user.phone_number === '0980682889' || user.username === '0980682889')) {
             adminMenuItem.style.display = 'flex';
         } else {
             adminMenuItem.style.display = 'none';
