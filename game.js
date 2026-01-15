@@ -150,6 +150,18 @@ function getBallLetter(num) {
     return 'O';
 }
 
+let autoMarking = true;
+
+const autoToggle = document.getElementById('auto-toggle');
+if (autoToggle) {
+    autoToggle.classList.add('active'); // Default to ON
+    autoToggle.onclick = () => {
+        autoMarking = !autoMarking;
+        autoToggle.classList.toggle('active', autoMarking);
+        console.log(`Auto-marking: ${autoMarking ? 'ON' : 'OFF'}`);
+    };
+}
+
 function renderMyGameCard() {
     const bingoBoard = document.getElementById('bingo-board');
     if (!bingoBoard || !myGameCard) return;
@@ -172,13 +184,26 @@ function renderMyGameCard() {
             } else {
                 cell.id = `cell-${val}`;
                 cell.innerText = val;
+                
+                // Add click event for manual marking
+                cell.onclick = () => {
+                    if (!autoMarking) {
+                        // Only allow manual marking if it was actually called
+                        // We check the history stored in currentGameState (if we had it)
+                        // For now, let's just allow toggling the 'called' class manually if auto is off
+                        cell.classList.toggle('called');
+                    }
+                };
             }
             bingoBoard.appendChild(cell);
         });
     }
 }
 
+let lastHistory = [];
+
 function updateGameUI(history) {
+    lastHistory = history;
     if (history.length === 0) {
         activeBall.innerText = '--';
         recentBalls.innerHTML = '';
@@ -191,16 +216,27 @@ function updateGameUI(history) {
     activeBall.innerText = `${letter}${lastBall}`;
     activeBall.parentElement.style.borderColor = colors[letter];
 
-    // Mark called numbers on the player's card
-    history.forEach((num, index) => {
-        const el = document.getElementById(`cell-${num}`);
-        if (el) {
-            el.classList.add('called');
-            if (index === history.length - 1) {
-                el.classList.add('last-called');
+    // Mark called numbers on the player's card ONLY IF AUTO IS ON
+    if (autoMarking) {
+        history.forEach((num, index) => {
+            const el = document.getElementById(`cell-${num}`);
+            if (el) {
+                el.classList.add('called');
+                if (index === history.length - 1) {
+                    el.classList.add('last-called');
+                } else {
+                    el.classList.remove('last-called');
+                }
             }
+        });
+    } else {
+        // If auto is off, still update last-called highlight if the player already marked it
+        document.querySelectorAll('.bingo-cell.last-called').forEach(el => el.classList.remove('last-called'));
+        const el = document.getElementById(`cell-${lastBall}`);
+        if (el && el.classList.contains('called')) {
+            el.classList.add('last-called');
         }
-    });
+    }
 
     // Update progress
     callCount.innerText = history.length;
