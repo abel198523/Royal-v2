@@ -192,7 +192,7 @@ function startRoomGame(amount) {
             // Wait 5s then restart the continuous countdown
             setTimeout(() => startRoomCountdown(amount), 5000);
         }
-    }, 5000);
+    }, 3000);
 }
 
 function broadcastToRoom(amount, data) {
