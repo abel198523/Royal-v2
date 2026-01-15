@@ -75,7 +75,17 @@ function updateCountdown(seconds) {
     }
     if (stakeTimerEl) stakeTimerEl.innerText = timeStrWithEmoji;
     if (legendTimerEl) legendTimerEl.innerText = timeStr;
+
+    // If timer reaches 0 or it's playing, ensure myGameCard is handled
+    if (seconds <= 0 || seconds === 'PLAYING') {
+        // We'll let the server trigger GAME_START or handle it via logic
+    }
 }
+
+// Global variables (already cleaned up duplicates)
+let myGameCard = null;
+let currentSelectedCard = null;
+let currentCardData = null;
 
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
@@ -126,11 +136,10 @@ function startGame() {
     const gameScreen = document.getElementById('game-screen');
     if (gameScreen) gameScreen.classList.add('active');
     
-    // Reset any selection UI
-    const myBoardLabel = document.getElementById('sel-my-board');
-    if (myBoardLabel) myBoardLabel.innerText = '-';
+    // Render the selected card on the board
+    renderMyGameCard();
     
-    console.log('Game started, showing game board');
+    console.log('Game started, showing game board with player card');
 }
 
 function getBallLetter(num) {
@@ -141,10 +150,39 @@ function getBallLetter(num) {
     return 'O';
 }
 
+function renderMyGameCard() {
+    const bingoBoard = document.getElementById('bingo-board');
+    if (!bingoBoard || !myGameCard) return;
+
+    bingoBoard.innerHTML = '';
+    
+    // Middle spot is FREE
+    const cardData = JSON.parse(JSON.stringify(myGameCard));
+    cardData['N'][2] = 'FREE';
+
+    const letters = ['B', 'I', 'N', 'G', 'O'];
+    for (let row = 0; row < 5; row++) {
+        letters.forEach(l => {
+            const val = cardData[l][row];
+            const cell = document.createElement('div');
+            cell.className = 'bingo-cell';
+            if (val === 'FREE') {
+                cell.classList.add('free-spot', 'called');
+                cell.innerText = 'FREE';
+            } else {
+                cell.id = `cell-${val}`;
+                cell.innerText = val;
+            }
+            bingoBoard.appendChild(cell);
+        });
+    }
+}
+
 function updateGameUI(history) {
     if (history.length === 0) {
         activeBall.innerText = '--';
         recentBalls.innerHTML = '';
+        if (myGameCard) renderMyGameCard();
         return;
     }
     
@@ -153,46 +191,28 @@ function updateGameUI(history) {
     activeBall.innerText = `${letter}${lastBall}`;
     activeBall.parentElement.style.borderColor = colors[letter];
 
-    // Reset styles
-    document.querySelectorAll('.bingo-cell').forEach(cell => {
-        cell.classList.remove('called', 'last-called', 'blue-highlight');
-    });
-
-    const counts = { B: 0, I: 0, N: 0, G: 0, O: 0 };
-
+    // Mark called numbers on the player's card
     history.forEach((num, index) => {
-        const el = document.getElementById(`num-${num}`);
-        const l = getBallLetter(num);
-        counts[l]++;
-        
+        const el = document.getElementById(`cell-${num}`);
         if (el) {
+            el.classList.add('called');
             if (index === history.length - 1) {
                 el.classList.add('last-called');
-            } else if (l === 'B' || l === 'I') {
-                el.classList.add('blue-highlight');
-            } else if (l === 'N') {
-                el.classList.add('called');
-            } else {
-                el.classList.add('called');
             }
         }
     });
 
-    // Update headers counts
-    Object.keys(counts).forEach(l => {
-        const header = document.querySelector(`.h-${l}`);
-        if (header) header.setAttribute('data-count', counts[l]);
-    });
+    // Update progress
+    callCount.innerText = history.length;
+    progressText.innerText = `${history.length}/75`;
+    progressBar.style.width = `${(history.length / 75) * 100}%`;
 
+    // Recent balls strip
     const recent = history.slice(-4, -1).reverse();
     recentBalls.innerHTML = recent.map(n => {
         const l = getBallLetter(n);
         return `<div class="hist-ball" style="background: ${colors[l]}">${l}${n}</div>`;
     }).join('');
-    
-    callCount.innerText = history.length;
-    progressText.innerText = `${history.length}/75`;
-    progressBar.style.width = `${(history.length / 75) * 100}%`;
 }
 
 const cardsGrid = document.getElementById('cards-grid');
@@ -298,51 +318,6 @@ const closePreview = document.getElementById('close-preview');
 const rejectCard = document.getElementById('reject-card');
 const confirmCard = document.getElementById('confirm-card');
 
-let currentSelectedCard = null;
-let currentCardData = null;
-
-let staticCards = [];
-
-// Load cards from cards.json
-async function loadCards() {
-    try {
-        const response = await fetch('cards.json');
-        staticCards = await response.json();
-        createAvailableCards();
-    } catch (err) {
-        console.error('Error loading cards:', err);
-    }
-}
-
-function createAvailableCards() {
-    const cardsGrid = document.getElementById('cards-grid');
-    if (!cardsGrid) return;
-    cardsGrid.innerHTML = '';
-    
-    // Update legend counts
-    const availableCount = 100 - roomTakenCards.length;
-    const takenCount = roomTakenCards.length;
-    
-    const legendAvailable = document.querySelector('.legend-item:nth-child(1)');
-    const legendTaken = document.querySelector('.legend-item:nth-child(2)');
-    
-    if (legendAvailable) legendAvailable.innerHTML = `<div class="dot green"></div> Available (${availableCount})`;
-    if (legendTaken) legendTaken.innerHTML = `<div class="dot red"></div> Taken (${takenCount})`;
-
-    for (let i = 1; i <= 100; i++) {
-        const card = document.createElement('div');
-        card.className = 'card-item';
-        if (roomTakenCards.includes(i)) card.classList.add('taken');
-        card.innerText = i;
-        
-        card.onclick = () => {
-            if (card.classList.contains('taken')) return;
-            showCardPreview(i);
-        };
-        cardsGrid.appendChild(card);
-    }
-}
-
 function showCardPreview(num) {
     if (userBalance < currentRoom) {
         alert("በቂ ባላንስ የልዎትም፤ እባክዎን ዲፖዚት ያድርጉ።");
@@ -372,6 +347,8 @@ rejectCard.onclick = () => {
 
 confirmCard.onclick = () => {
     if (!currentSelectedCard || !currentCardData) return;
+    
+    myGameCard = currentCardData; // Store the card for gameplay
     
     socket.send(JSON.stringify({ 
         type: 'BUY_CARD', 
