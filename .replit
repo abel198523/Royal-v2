@@ -4,7 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["openssl", "postgresql", "jq"]
+packages = ["jq", "openssl", "postgresql"]
 
 [workflows]
 runButton = "Project"
@@ -16,15 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Bingo Server"
+args = "Start application"
 
 [[workflows.workflow]]
-name = "Bingo Server"
+name = "Start application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm start"
+args = "node server.js"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -36,4 +36,4 @@ externalPort = 80
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+run = ["node", "server.js"]
