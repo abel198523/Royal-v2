@@ -72,7 +72,7 @@ app.post('/api/signup-verify', async (req, res) => {
         );
         const user = result.rows[0];
         const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY);
-        res.json({ token, username: user.username, balance: user.balance, name: user.name });
+        res.json({ token, username: user.username, balance: user.balance, name: user.name, player_id: user.player_id });
     } catch (err) {
         res.status(500).json({ error: "ምዝገባው አልተሳካም" });
     }
@@ -91,7 +91,8 @@ app.post('/api/login', async (req, res) => {
             token, 
             username: result.rows[0].username, 
             balance: result.rows[0].balance,
-            name: result.rows[0].name 
+            name: result.rows[0].name,
+            player_id: result.rows[0].player_id
         });
     } catch (err) { res.status(500).send(err); }
 });

@@ -576,11 +576,13 @@ function updateUserData(user) {
     const balanceEl = document.getElementById('sel-balance');
     const walletBalanceEl = document.getElementById('wallet-balance-value');
     const profilePhoneEl = document.getElementById('profile-phone-number');
+    const playerIdEl = document.getElementById('profile-player-id'); // We'll need to add this to HTML
     
     usernameEls.forEach(el => { if(el) el.innerText = user.name || user.username; });
     if(balanceEl) balanceEl.innerText = userBalance;
     if(walletBalanceEl) walletBalanceEl.innerText = userBalance.toFixed(2);
     if(profilePhoneEl) profilePhoneEl.innerText = user.phone_number || user.username;
+    if(playerIdEl && user.player_id) playerIdEl.innerText = `ID: ${user.player_id}`;
 
     // Show Admin Panel if user is admin
     const adminMenuItem = document.getElementById('admin-menu-item');
