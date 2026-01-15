@@ -81,10 +81,18 @@ function updateCountdown(seconds) {
 async function loadCards() {
     try {
         const response = await fetch('cards.json');
+        if (!response.ok) throw new Error('Failed to load cards.json');
         staticCards = await response.json();
+        console.log(`Loaded ${staticCards.length} cards`);
         createAvailableCards();
     } catch (err) {
         console.error('Error loading cards:', err);
+        // Fallback: Generate some cards if JSON fails
+        staticCards = Array.from({length: 100}, (_, i) => ({
+            id: i + 1,
+            data: generateBingoCard()
+        }));
+        createAvailableCards();
     }
 }
 
