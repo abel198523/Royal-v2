@@ -33,6 +33,28 @@ function createBingoNumbers() {
 let currentRoom = null;
 let roomTakenCards = [];
 
+function updateRoomStats(stats, roomTimers) {
+    Object.keys(stats).forEach(amount => {
+        const countEl = document.getElementById(`stake-count-${amount}`);
+        if (countEl) countEl.innerText = `${stats[amount]} Players`;
+        
+        const timerEl = document.getElementById(`stake-timer-${amount}`);
+        if (timerEl && roomTimers && roomTimers[amount] !== undefined) {
+            const val = roomTimers[amount];
+            if (val === 'PLAYING') {
+                timerEl.innerText = '🎮 PLAYING';
+                timerEl.style.color = '#22c55e';
+                timerEl.style.background = 'rgba(34, 197, 94, 0.1)';
+            } else {
+                const seconds = parseInt(val);
+                timerEl.innerText = `⏰ ${seconds}`;
+                timerEl.style.color = '#f59e0b';
+                timerEl.style.background = 'rgba(245, 158, 11, 0.1)';
+            }
+        }
+    });
+}
+
 function updateCountdown(seconds) {
     const timerEl = document.getElementById('selection-timer');
     const timerLargeEl = document.getElementById('selection-timer-large');
