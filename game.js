@@ -115,19 +115,20 @@ socket.onmessage = (event) => {
 };
 
 function startGame() {
-    // Switch to game screen
-    if (selectionScreen) selectionScreen.classList.remove('active');
-    if (stakeScreen) stakeScreen.classList.remove('active');
-    if (profileScreen) profileScreen.classList.remove('active');
-    if (walletScreen) walletScreen.classList.remove('active');
+    // Hide all other screens
+    const screens = ['selection-screen', 'stake-screen', 'profile-screen', 'wallet-screen'];
+    screens.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.classList.remove('active');
+    });
+    
+    // Show game screen
+    const gameScreen = document.getElementById('game-screen');
+    if (gameScreen) gameScreen.classList.add('active');
     
     // Reset any selection UI
     const myBoardLabel = document.getElementById('sel-my-board');
     if (myBoardLabel) myBoardLabel.innerText = '-';
-    
-    // Make sure main content is visible
-    const mainContent = document.getElementById('main-content');
-    if (mainContent) mainContent.style.display = 'block';
     
     console.log('Game started, showing game board');
 }
