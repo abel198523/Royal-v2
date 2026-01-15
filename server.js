@@ -168,6 +168,10 @@ function startRoomGame(amount) {
             const randomIndex = Math.floor(Math.random() * room.balls.length);
             const ball = room.balls.splice(randomIndex, 1)[0];
             room.drawnBalls.push(ball);
+            
+            // Log for debugging
+            console.log(`Room ${amount}: Ball drawn ${ball}. History: ${room.drawnBalls.join(',')}`);
+
             broadcastToRoom(amount, { 
                 type: 'NEW_BALL', 
                 ball, 
