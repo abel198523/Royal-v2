@@ -71,8 +71,8 @@ app.post('/api/signup-verify', async (req, res) => {
             [phone, hash, phone, name]
         );
         const user = result.rows[0];
-        const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY);
-        res.json({ token, username: user.username, balance: user.balance, name: user.name, player_id: user.player_id });
+        const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin }, SECRET_KEY);
+        res.json({ token, username: user.username, balance: user.balance, name: user.name, player_id: user.player_id, is_admin: user.is_admin });
     } catch (err) {
         res.status(500).json({ error: "ምዝገባው አልተሳካም" });
     }
@@ -86,19 +86,38 @@ app.post('/api/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, result.rows[0].password_hash);
         if (!isMatch) return res.status(401).json({ error: "ስህተት" });
         
-        const token = jwt.sign({ id: result.rows[0].id, username: result.rows[0].username }, SECRET_KEY);
+        const user = result.rows[0];
+        const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin }, SECRET_KEY);
         res.json({ 
             token, 
-            username: result.rows[0].username, 
-            balance: result.rows[0].balance,
-            name: result.rows[0].name,
-            player_id: result.rows[0].player_id
+            username: user.username, 
+            balance: user.balance,
+            name: user.name,
+            player_id: user.player_id,
+            is_admin: user.is_admin
         });
     } catch (err) { res.status(500).send(err); }
 });
 
+// Middleware to check if user is admin
+const adminOnly = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "ያልተፈቀደ ሙከራ" });
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        if (decoded.is_admin) {
+            req.user = decoded;
+            next();
+        } else {
+            res.status(403).json({ error: "ይህ ገጽ ለአድሚን ብቻ የተፈቀደ ነው" });
+        }
+    } catch (err) {
+        res.status(401).json({ error: "ትክክለኛ ያልሆነ ቶከን" });
+    }
+};
+
 // Admin Route (Hidden)
-app.post('/api/admin/update-balance', async (req, res) => {
+app.post('/api/admin/update-balance', adminOnly, async (req, res) => {
     const { phone, balance } = req.body;
     try {
         const result = await db.query(

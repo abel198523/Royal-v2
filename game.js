@@ -587,7 +587,7 @@ function updateUserData(user) {
     // Show Admin Panel if user is admin
     const adminMenuItem = document.getElementById('admin-menu-item');
     if (adminMenuItem) {
-        if (user.role === 'admin' || user.username === '0980682889') { // Assuming this phone is admin for now
+        if (user.is_admin) {
             adminMenuItem.style.display = 'flex';
         } else {
             adminMenuItem.style.display = 'none';
