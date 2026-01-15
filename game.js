@@ -83,16 +83,16 @@ async function loadCards() {
         const response = await fetch('cards.json');
         if (!response.ok) throw new Error('Failed to load cards.json');
         staticCards = await response.json();
-        console.log(`Loaded ${staticCards.length} cards`);
+        console.log(`Loaded ${staticCards.length} cards strictly from cards.json`);
         createAvailableCards();
     } catch (err) {
-        console.error('Error loading cards:', err);
-        // Fallback: Generate some cards if JSON fails
-        staticCards = Array.from({length: 100}, (_, i) => ({
-            id: i + 1,
-            data: generateBingoCard()
-        }));
-        createAvailableCards();
+        console.error('CRITICAL: Error loading static cards.json:', err);
+        // We no longer fallback to generating random cards.
+        // If it fails, we show an error in the grid.
+        const cardsGrid = document.getElementById('cards-grid');
+        if (cardsGrid) {
+            cardsGrid.innerHTML = '<div class="error-msg">ካርዶችን መጫን አልተቻለም። እባክዎ ገጹን ያድሱ።</div>';
+        }
     }
 }
 
