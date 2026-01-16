@@ -80,7 +80,8 @@ function updateCountdown(seconds) {
     if (timerEl) timerEl.innerText = timeStrWithEmoji;
     if (timerLargeEl) timerLargeEl.innerText = timeStr;
     if (stakeTimerEl) stakeTimerEl.innerText = timeStrWithEmoji;
-    if (legendTimerEl) legendTimerEl.innerText = timeStr;
+    if (legendTimerEl) legendTimerEl.innerText = legendTimerEl.innerText; // Dummy to avoid error
+    if (legendTimerEl && seconds !== 'PLAYING') legendTimerEl.innerText = seconds;
 }
 
 // 100 static bingo cards
