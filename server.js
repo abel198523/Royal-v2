@@ -185,6 +185,74 @@ app.post('/api/admin/reject-deposit', adminOnly, async (req, res) => {
     }
 });
 
+// --- SMS WEBHOOK ---
+// ይህ API ከስልክ ወይም ከሌላ ሲስተም የኤስኤምኤስ መረጃዎችን ለመቀበል ያገለግላል
+app.post('/api/sms-webhook', async (req, res) => {
+    const { message, sender, secret } = req.body;
+    
+    // ለደህንነት ሲባል ሚስጥራዊ ቁልፍ (Secret Key) ማረጋገጥ ይቻላል
+    if (secret !== "fidel_sms_secret_9988") {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!message) return res.status(400).json({ error: "No message provided" });
+
+    try {
+        console.log(`Received SMS from ${sender}: ${message}`);
+
+        // የትራንዛክሽን ኮድ (Transaction Code) ከሜሴጁ ውስጥ ፈልጎ ማውጣት
+        // ለምሳሌ፡ "Ref: ABC123DEF" ወይም "Transaction ID: 123456"
+        // እዚህ ጋር እንደየባንኩ ሜሴጅ ፎርማት ይለያያል (ለምሳሌ የኢትዮጵያ ንግድ ባንክ ወይም አቢሲኒያ)
+        
+        // ቀለል ያለ የኮድ ፍለጋ (Regex) - 10 ፊደላት/ቁጥሮች የያዘ ኮድ ቢሆን
+        const codeMatch = message.match(/[A-Z0-9]{10,12}/);
+        if (!codeMatch) {
+            return res.json({ message: "No transaction code found in SMS" });
+        }
+
+        const transactionCode = codeMatch[0];
+        console.log(`Extracted Transaction Code: ${transactionCode}`);
+
+        // በዲቢ ውስጥ ይህ ኮድ ያለው የፔንዲንግ ጥያቄ መኖሩን ማረጋገጥ
+        await db.query('BEGIN');
+        
+        const depositReq = await db.query(
+            'SELECT * FROM deposit_requests WHERE transaction_code = $1 AND status = $2',
+            [transactionCode, 'pending']
+        );
+
+        if (depositReq.rows.length === 0) {
+            await db.query('ROLLBACK');
+            return res.json({ message: "No matching pending deposit request found" });
+        }
+
+        const { id, user_id, amount } = depositReq.rows[0];
+
+        // 1. የዲፖዚት ጥያቄውን አፕሩቭ (Approve) ማድረግ
+        await db.query('UPDATE deposit_requests SET status = $1 WHERE id = $2', ['approved', id]);
+
+        // 2. የተጠቃሚውን ባላንስ መጨመር
+        await db.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [amount, user_id]);
+
+        // 3. ሂስትሪ (History) መመዝገብ
+        const userRes = await db.query('SELECT balance FROM users WHERE id = $1', [user_id]);
+        await db.query(
+            'INSERT INTO balance_history (user_id, type, amount, balance_after, description) VALUES ($1, $2, $3, $4, $5)',
+            [user_id, 'deposit', amount, userRes.rows[0].balance, `Auto-Approved SMS Deposit (${transactionCode})`]
+        );
+
+        await db.query('COMMIT');
+        
+        console.log(`Successfully auto-approved deposit for user ${user_id}, amount: ${amount}`);
+        res.json({ message: "Deposit automatically approved" });
+
+    } catch (err) {
+        await db.query('ROLLBACK');
+        console.error("SMS Webhook Error:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 app.post('/api/deposit-request', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: "Login required" });
