@@ -207,6 +207,12 @@ socket.onmessage = (event) => {
         if (currentRoom && data.timers[currentRoom] !== undefined) {
             updateCountdown(data.timers[currentRoom]);
         }
+    } else if (data.type === 'BALANCE_UPDATE') {
+        userBalance = data.balance;
+        const balanceEl = document.getElementById('sel-balance');
+        const walletBalanceEl = document.getElementById('wallet-balance-value');
+        if (balanceEl) balanceEl.innerText = userBalance.toFixed(2);
+        if (walletBalanceEl) walletBalanceEl.innerText = userBalance.toFixed(2);
     }
 };
 
@@ -435,7 +441,8 @@ function createStakeList() {
 
 window.joinStake = (amount) => {
     currentRoom = amount;
-    socket.send(JSON.stringify({ type: 'JOIN_ROOM', room: amount }));
+    const token = localStorage.getItem('bingo_token');
+    socket.send(JSON.stringify({ type: 'JOIN_ROOM', room: amount, token: token }));
     const stakeLabel = document.getElementById('sel-stake-amount');
     if (stakeLabel) stakeLabel.innerText = `${amount} ETB`;
     const screens = ['stake-screen', 'profile-screen', 'wallet-screen', 'game-screen'];

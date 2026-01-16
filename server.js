@@ -394,33 +394,52 @@ wss.on('connection', (ws) => {
             // Find the player who claimed in THIS room
             let playerWs = null;
             room.players.forEach(p => {
-                // Check room-specific card data
                 const roomData = p.roomData ? p.roomData[data.room] : null;
                 const cardNumber = roomData ? roomData.cardNumber : p.cardNumber;
                 if (cardNumber === data.cardNumber) playerWs = p;
             });
 
-            if (playerWs) {
+            if (playerWs && playerWs.userId) {
                 const roomData = playerWs.roomData ? playerWs.roomData[data.room] : null;
                 const cardData = roomData ? roomData.cardData : playerWs.cardData;
 
                 if (cardData) {
                     const winInfo = checkWin(cardData, room.drawnBalls);
                     if (winInfo) {
-                        // Winner found! Stop the game and broadcast
+                        // Winner found! Stop the game
                         clearInterval(room.gameInterval);
                         room.gameInterval = null;
+
+                        // Calculate reward distribution
+                        const stake = room.stake;
+                        const playersCount = Array.from(room.players).filter(p => p.cardNumber || (p.roomData && p.roomData[data.room])).length;
+                        const totalPool = stake * playersCount;
+                        
+                        let winnerShare = 0.8; // Default 80%
+                        if (stake === 5) {
+                            winnerShare = 0.9; // 90% for 5 ETB room
+                        }
+                        
+                        const winAmount = totalPool * winnerShare;
+                        
+                        // Update winner balance in DB
+                        try {
+                            await db.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [winAmount, playerWs.userId]);
+                            console.log(`User ${playerWs.userId} won ${winAmount} in Room ${data.room}`);
+                        } catch (err) {
+                            console.error('Win Update Error:', err);
+                        }
 
                         broadcastToRoom(data.room, {
                             type: 'GAME_OVER',
                             winner: playerWs.name || playerWs.username || 'ተጫዋች',
-                            message: `🎉 ቢንጎ! ${playerWs.name || playerWs.username} አሸንፏል!`,
+                            message: `🎉 ቢንጎ! ${playerWs.name || playerWs.username} ${winAmount.toFixed(2)} ETB አሸንፏል!`,
                             winCard: cardData,
                             winPattern: winInfo.pattern,
                             room: data.room
                         });
 
-                        // Reset for next game in THIS room
+                        // Reset for next game
                         room.players.forEach(p => {
                             if (p.roomData) delete p.roomData[data.room];
                             p.cardNumber = null;
@@ -436,6 +455,17 @@ wss.on('connection', (ws) => {
             }
         }
         if (data.type === 'JOIN_ROOM') {
+            // Validate token and attach user ID if not already attached
+            if (data.token) {
+                try {
+                    const decoded = jwt.verify(data.token, SECRET_KEY);
+                    ws.userId = decoded.id;
+                    ws.username = decoded.username;
+                    const userRes = await db.query('SELECT name FROM users WHERE id = $1', [ws.userId]);
+                    if (userRes.rows.length > 0) ws.name = userRes.rows[0].name;
+                } catch (e) { console.error("Token verification failed in JOIN_ROOM"); }
+            }
+
             // Remove from old room if any
             if (ws.room && rooms[ws.room]) {
                 rooms[ws.room].players.delete(ws);
@@ -464,20 +494,42 @@ wss.on('connection', (ws) => {
         }
         
         if (data.type === 'BUY_CARD') {
-            if (!ws.room) return;
-            // Store card data per room on the connection object
-            if (!ws.roomData) ws.roomData = {};
-            ws.roomData[data.room] = {
-                cardNumber: data.cardNumber,
-                cardData: data.cardData
-            };
-            
-            // For backward compatibility or single-room focus
-            ws.cardNumber = data.cardNumber;
-            ws.cardData = data.cardData;
-            
-            console.log(`Room ${ws.room}: Card ${data.cardNumber} bought`);
-            updateGlobalStats();
+            if (!ws.room || !ws.userId) return;
+
+            // Deduct balance from DB
+            try {
+                const stake = rooms[ws.room].stake;
+                const user = await db.query('SELECT balance FROM users WHERE id = $1', [ws.userId]);
+                if (user.rows[0].balance < stake) {
+                    return ws.send(JSON.stringify({ type: 'ERROR', message: 'በቂ ባላንስ የልዎትም!' }));
+                }
+
+                await db.query('UPDATE users SET balance = balance - $1 WHERE id = $2', [stake, ws.userId]);
+                const updatedUser = await db.query('SELECT balance FROM users WHERE id = $1', [ws.userId]);
+                
+                // Notify client of new balance
+                ws.send(JSON.stringify({ 
+                    type: 'BALANCE_UPDATE', 
+                    balance: updatedUser.rows[0].balance 
+                }));
+
+                // Store card data per room on the connection object
+                if (!ws.roomData) ws.roomData = {};
+                ws.roomData[data.room] = {
+                    cardNumber: data.cardNumber,
+                    cardData: data.cardData
+                };
+                
+                // For backward compatibility
+                ws.cardNumber = data.cardNumber;
+                ws.cardData = data.cardData;
+                
+                console.log(`Room ${ws.room}: Card ${data.cardNumber} bought by User ${ws.userId}`);
+                updateGlobalStats();
+            } catch (err) {
+                console.error('Buy Card Error:', err);
+                ws.send(JSON.stringify({ type: 'ERROR', message: 'የካርድ ግዢ አልተሳካም!' }));
+            }
         }
     });
 
