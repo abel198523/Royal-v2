@@ -616,9 +616,62 @@ app.get('/health', (req, res) => {
     res.status(200).send('OK');
 });
 
+// --- DATABASE INITIALIZATION ---
+async function initDatabase() {
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                phone_number VARCHAR(20) UNIQUE NOT NULL,
+                password_hash VARCHAR(256) NOT NULL,
+                username VARCHAR(64),
+                name VARCHAR(100),
+                balance DECIMAL(10, 2) DEFAULT 100,
+                player_id VARCHAR(20),
+                is_admin BOOLEAN DEFAULT FALSE
+            );
+
+            -- Ensure columns exist for existing tables
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='player_id') THEN
+                    ALTER TABLE users ADD COLUMN player_id VARCHAR(20);
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='is_admin') THEN
+                    ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE;
+                END IF;
+            END $$;
+
+            CREATE TABLE IF NOT EXISTS deposit_requests (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                amount DECIMAL(10, 2) NOT NULL,
+                method VARCHAR(50),
+                transaction_code VARCHAR(100),
+                status VARCHAR(20) DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS withdraw_requests (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                amount DECIMAL(10, 2) NOT NULL,
+                method VARCHAR(50),
+                account_details TEXT,
+                status VARCHAR(20) DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log("Database initialized successfully.");
+    } catch (err) {
+        console.error("Database initialization failed:", err);
+    }
+}
+
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', async () => {
     console.log(`Server running on port ${PORT}`);
+    await initDatabase();
     STAKES.forEach(amount => {
         startRoomCountdown(amount);
     });
