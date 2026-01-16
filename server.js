@@ -461,17 +461,22 @@ wss.on('connection', (ws) => {
             const room = rooms[data.room];
             if (!room || !room.gameInterval) return;
 
+            console.log(`Bingo claim received for Room ${data.room}, Card ${data.cardNumber}`);
+
             // Find the player who claimed in THIS room
             let playerWs = null;
             room.players.forEach(p => {
-                const roomData = p.roomData ? p.roomData[data.room] : null;
-                const cardNumber = roomData ? roomData.cardNumber : p.cardNumber;
-                if (cardNumber === data.cardNumber) playerWs = p;
+                // Check both direct property and roomData object
+                const pCard = (p.roomData && p.roomData[data.room]) ? p.roomData[data.room].cardNumber : p.cardNumber;
+                if (pCard == data.cardNumber) {
+                    playerWs = p;
+                }
             });
 
             if (playerWs && playerWs.userId) {
-                const roomData = playerWs.roomData ? playerWs.roomData[data.room] : null;
-                const cardData = roomData ? roomData.cardData : playerWs.cardData;
+                // Use the room-specific card data if available
+                const roomData = (playerWs.roomData && playerWs.roomData[data.room]) ? playerWs.roomData[data.room] : { cardData: playerWs.cardData };
+                const cardData = roomData.cardData;
 
                 if (cardData) {
                     const winInfo = checkWin(cardData, room.drawnBalls);
