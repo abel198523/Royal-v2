@@ -297,7 +297,9 @@ wss.on('connection', (ws) => {
         }
         
         if (data.type === 'BUY_CARD') {
+            if (!ws.room) return;
             ws.cardNumber = data.cardNumber;
+            ws.cardData = data.cardData; // Store card data for validation
             console.log(`Room ${ws.room}: Card ${data.cardNumber} bought`);
             updateGlobalStats();
         }

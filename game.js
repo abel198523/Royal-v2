@@ -154,16 +154,16 @@ socket.onmessage = (event) => {
         }
         createAvailableCards();
     } else if (data.type === 'NEW_BALL') {
-        if (data.room === currentRoom) updateGameUI(data.history);
+        if (data.room == currentRoom) updateGameUI(data.history);
     } else if (data.type === 'COUNTDOWN') {
-        if (data.room === currentRoom) {
+        if (data.room == currentRoom) {
             updateCountdown(data.value);
             if (data.value <= 0) {
                 startGame();
             }
         }
     } else if (data.type === 'GAME_START') {
-        if (data.room === currentRoom) startGame();
+        if (data.room == currentRoom) startGame();
     } else if (data.type === 'ROOM_STATS') {
         if (data.takenCards && data.takenCards[currentRoom]) {
             roomTakenCards = data.takenCards[currentRoom];
