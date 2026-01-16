@@ -201,16 +201,26 @@ app.post('/api/sms-webhook', async (req, res) => {
         console.log(`Received SMS from ${sender}: ${message}`);
 
         // የትራንዛክሽን ኮድ (Transaction Code) ከሜሴጁ ውስጥ ፈልጎ ማውጣት
-        // ለምሳሌ፡ "Ref: ABC123DEF" ወይም "Transaction ID: 123456"
-        // እዚህ ጋር እንደየባንኩ ሜሴጅ ፎርማት ይለያያል (ለምሳሌ የኢትዮጵያ ንግድ ባንክ ወይም አቢሲኒያ)
+        // ቴሌብር ፎርማት፡ "ቁጥርዎ DAE4T2UI9Q ነዉ" ወይም ከሊንክ መጨረሻ "receipt/DAE4T2UI9Q"
         
-        // ቀለል ያለ የኮድ ፍለጋ (Regex) - 10 ፊደላት/ቁጥሮች የያዘ ኮድ ቢሆን
-        const codeMatch = message.match(/[A-Z0-9]{10,12}/);
-        if (!codeMatch) {
-            return res.json({ message: "No transaction code found in SMS" });
+        let transactionCode = null;
+        
+        // 1. መጀመሪያ ከሊንኩ መጨረሻ ለመፈለግ (ይህ የበለጠ አስተማማኝ ሊሆን ይችላል)
+        const linkMatch = message.match(/receipt\/([A-Z0-9]+)/);
+        if (linkMatch) {
+            transactionCode = linkMatch[1];
+        } else {
+            // 2. ካልተገኘ "ቁጥርዎ [CODE] ነዉ" የሚለውን መፈለግ
+            const codeMatch = message.match(/ቁጥርዎ\s+([A-Z0-9]{10,12})/);
+            if (codeMatch) {
+                transactionCode = codeMatch[1];
+            }
         }
 
-        const transactionCode = codeMatch[0];
+        if (!transactionCode) {
+            return res.json({ message: "No transaction code found in SMS" });
+        }
+        
         console.log(`Extracted Transaction Code: ${transactionCode}`);
 
         // በዲቢ ውስጥ ይህ ኮድ ያለው የፔንዲንግ ጥያቄ መኖሩን ማረጋገጥ
