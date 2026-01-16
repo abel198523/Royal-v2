@@ -375,6 +375,28 @@
             </div>
         </div><!-- End of main-content -->
     </div>
+    <!-- Winner Announcement Modal -->
+    <div id="winner-modal" class="winner-modal">
+        <div class="winner-content">
+            <div class="confetti-container" id="confetti"></div>
+            <div class="winner-icon">🏆</div>
+            <h2 id="winner-title">BINGO!</h2>
+            <div class="winner-name-box">
+                <span id="winner-display-name">---</span>
+            </div>
+            <p id="winner-amount-display">አሸናፊ!</p>
+            <button class="modal-close-btn" onclick="closeWinnerModal()">ተመለስ</button>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="notification-toast">
+        <div class="toast-content">
+            <span class="toast-icon">⚠️</span>
+            <span id="toast-message">---</span>
+        </div>
+    </div>
+
     <script src="game.js"></script>
 </body>
 </html>

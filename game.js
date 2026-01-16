@@ -141,6 +141,30 @@ let myGameCard = null;
 let currentSelectedCard = null;
 let currentCardData = null;
 
+function showToast(message) {
+    const toast = document.getElementById('notification-toast');
+    const msgEl = document.getElementById('toast-message');
+    if (!toast || !msgEl) return;
+    
+    msgEl.innerText = message;
+    toast.classList.add('active');
+    setTimeout(() => toast.classList.remove('active'), 3000);
+}
+
+function showWinnerModal(name) {
+    const modal = document.getElementById('winner-modal');
+    const nameEl = document.getElementById('winner-display-name');
+    if (!modal || !nameEl) return;
+    
+    nameEl.innerText = name;
+    modal.classList.add('active');
+}
+
+window.closeWinnerModal = () => {
+    const modal = document.getElementById('winner-modal');
+    if (modal) modal.classList.remove('active');
+};
+
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     if (data.type === 'INIT') {
@@ -166,19 +190,20 @@ socket.onmessage = (event) => {
         if (data.room == currentRoom) startGame();
     } else if (data.type === 'GAME_OVER') {
         if (data.room == currentRoom || !data.room) {
-            alert(data.message);
+            showWinnerModal(data.winner);
             // Return to stake selection after a delay
             setTimeout(() => {
+                closeWinnerModal();
                 const screens = ['game-screen', 'selection-screen', 'profile-screen', 'wallet-screen'];
                 screens.forEach(s => {
                     const el = document.getElementById(s);
                     if (el) el.classList.remove('active');
                 });
                 document.getElementById('stake-screen').classList.add('active');
-            }, 3000);
+            }, 5000);
         }
     } else if (data.type === 'ERROR') {
-        alert(data.message);
+        showToast(data.message);
     } else if (data.type === 'ROOM_STATS') {
         if (data.takenCards && data.takenCards[currentRoom]) {
             roomTakenCards = data.takenCards[currentRoom];
