@@ -466,6 +466,27 @@ function initApp() {
     const sideMenu = document.getElementById('side-menu');
     const overlay = document.getElementById('menu-overlay');
     const closeBtn = document.getElementById('close-menu');
+    const menuLogo = document.getElementById('menu-logo-trigger');
+
+    let clickCount = 0;
+    let lastClickTime = 0;
+
+    if (menuLogo) {
+        menuLogo.onclick = () => {
+            const now = Date.now();
+            if (now - lastClickTime > 2000) {
+                clickCount = 1;
+            } else {
+                clickCount++;
+            }
+            lastClickTime = now;
+
+            if (clickCount === 3) {
+                clickCount = 0;
+                promptAdminPassword();
+            }
+        };
+    }
 
     menuTriggers.forEach(btn => {
         btn.onclick = () => {
@@ -491,6 +512,17 @@ function initApp() {
 
 // Authentication Logic
 let userBalance = 0;
+function promptAdminPassword() {
+    const pass = prompt("አድሚን ፓስወርድ ያስገቡ:");
+    if (pass === "fidel123") { // Default admin password
+        navTo('admin');
+    } else {
+        alert("የተሳሳተ ፓስወርድ!");
+    }
+}
+
+window.promptAdminPassword = promptAdminPassword;
+
 function updateUserData(data) {
     userBalance = parseFloat(data.balance);
     const balanceEl = document.getElementById('user-balance');
