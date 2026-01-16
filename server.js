@@ -620,15 +620,15 @@ wss.on('connection', (ws) => {
 
                 // Store card data per room on the connection object
                 if (!ws.roomData) ws.roomData = {};
-                ws.roomData[data.room] = {
+                ws.roomData[ws.room] = {
                     cardNumber: data.cardNumber,
                     cardData: data.cardData
                 };
                 
-                // For backward compatibility
+                // For backward compatibility/simplicity in broadcasting
                 ws.cardNumber = data.cardNumber;
                 ws.cardData = data.cardData;
-                
+
                 console.log(`Room ${ws.room}: Card ${data.cardNumber} bought by User ${ws.userId}`);
                 updateGlobalStats();
             } catch (err) {
