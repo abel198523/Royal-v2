@@ -604,10 +604,6 @@ window.promptAdminPassword = () => {
         alert("የተሳሳተ ፓስወርድ ነው!");
     }
 };
-            adminMenuItem.style.display = 'none';
-        }
-    }
-}
 
 // Sidebar Logic
 const sideMenu = document.getElementById('side-menu');
