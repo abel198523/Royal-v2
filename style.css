@@ -384,7 +384,6 @@ body {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
-/* Auth Screens */
 .auth-screen {
     position: fixed;
     top: 0;
@@ -402,14 +401,14 @@ body {
     display: flex;
 }
 
-.auth-box {
-    background: #1e2533;
-    padding: 2.5rem;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    text-align: center;
+.stake-screen, .profile-screen, .wallet-screen, .game-screen, .selection-screen, .admin-screen {
+    display: none;
+    padding-top: 70px; /* Space for header */
+}
+
+.stake-screen.active, .profile-screen.active, .wallet-screen.active, .game-screen.active, .selection-screen.active, .admin-screen.active {
+    display: flex;
+    flex-direction: column;
 }
 
 .auth-logo {
