@@ -25,7 +25,9 @@ A web-based Bingo game application with real-time gameplay using WebSockets.
 - Game starts automatically with 5-second ball draw intervals
 
 ## Database Schema
-- `users` table: id, username, phone_number, password_hash, balance, created_at
+- `users` table: id, phone_number, password_hash, username, name, balance
+- `deposit_requests` table: id, user_id, amount, method, transaction_code, status, created_at
+- `withdraw_requests` table: id, user_id, amount, method, account_details, status, created_at
 
 ## API Endpoints
 - `POST /api/login` - User authentication with phone and password
