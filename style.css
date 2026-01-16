@@ -1588,6 +1588,15 @@ header {
     border: none !important;
 }
 
+.player-card-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: auto repeat(5, 1fr);
+    gap: 3px;
+    width: 100%;
+    margin: 0 auto;
+}
+
 .bingo-cell {
     background: #111827;
     border: 1px solid #374151;

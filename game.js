@@ -306,19 +306,21 @@ function renderMyGameCard() {
         cardLabel.innerText = `የእርስዎ ካርድ #${currentSelectedCard}`;
     }
 
-    // Add B I N G O Headers to the card
+    // Middle spot is FREE
+    const cardData = JSON.parse(JSON.stringify(myGameCard));
+    cardData['N'][2] = 'FREE';
+
     const letters = ['B', 'I', 'N', 'G', 'O'];
+    
+    // Add Headers first
     letters.forEach(l => {
         const header = document.createElement('div');
         header.className = 'bingo-cell card-header-cell';
         header.innerText = l;
         bingoBoard.appendChild(header);
     });
-    
-    // Middle spot is FREE
-    const cardData = JSON.parse(JSON.stringify(myGameCard));
-    cardData['N'][2] = 'FREE';
 
+    // Now add the numbers row by row
     for (let row = 0; row < 5; row++) {
         letters.forEach(l => {
             const val = cardData[l][row];
