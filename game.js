@@ -785,7 +785,80 @@ document.getElementById('do-login').onclick = async () => {
             // Show the stake screen by default
             navTo('stake');
             
-            initApp();
+            window.showSignup = () => {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('signup-form').style.display = 'block';
+    document.getElementById('otp-form').style.display = 'none';
+};
+
+window.showLogin = () => {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('signup-form').style.display = 'none';
+    document.getElementById('otp-form').style.display = 'none';
+};
+
+const doSignupBtn = document.getElementById('do-signup');
+if (doSignupBtn) {
+    doSignupBtn.onclick = async () => {
+        const name = document.getElementById('signup-name').value;
+        const phone = document.getElementById('signup-phone').value;
+        const password = document.getElementById('signup-pass').value;
+        const errorEl = document.getElementById('auth-error');
+
+        if (!name || !phone || !password) return alert("እባክዎ ሁሉንም መረጃዎች ያስገቡ");
+
+        try {
+            const res = await fetch('/api/signup-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('signup-form').style.display = 'none';
+                document.getElementById('otp-form').style.display = 'block';
+                const hint = document.getElementById('otp-hint');
+                if (hint) hint.innerText = data.message;
+                // For testing convenience
+                if (data.otp) document.getElementById('otp-code').value = data.otp;
+            } else {
+                errorEl.innerText = data.error;
+            }
+        } catch (e) { console.error(e); }
+    };
+}
+
+const verifyOtpBtn = document.getElementById('verify-otp');
+if (verifyOtpBtn) {
+    verifyOtpBtn.onclick = async () => {
+        const name = document.getElementById('signup-name').value;
+        const phone = document.getElementById('signup-phone').value;
+        const password = document.getElementById('signup-pass').value;
+        const otp = document.getElementById('otp-code').value;
+        const errorEl = document.getElementById('auth-error');
+
+        try {
+            const res = await fetch('/api/signup-verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, password, name, otp })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('bingo_token', data.token);
+                updateUserData(data);
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                navTo('stake');
+                initApp();
+            } else {
+                errorEl.innerText = data.error;
+            }
+        } catch (e) { console.error(e); }
+    };
+}
+
+initApp();
         } else {
             if (errorEl) errorEl.innerText = data.error || 'Login failed';
         }
@@ -794,5 +867,78 @@ document.getElementById('do-login').onclick = async () => {
         if (errorEl) errorEl.innerText = 'Connection error';
     }
 };
+
+window.showSignup = () => {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('signup-form').style.display = 'block';
+    document.getElementById('otp-form').style.display = 'none';
+};
+
+window.showLogin = () => {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('signup-form').style.display = 'none';
+    document.getElementById('otp-form').style.display = 'none';
+};
+
+const doSignupBtn = document.getElementById('do-signup');
+if (doSignupBtn) {
+    doSignupBtn.onclick = async () => {
+        const name = document.getElementById('signup-name').value;
+        const phone = document.getElementById('signup-phone').value;
+        const password = document.getElementById('signup-pass').value;
+        const errorEl = document.getElementById('auth-error');
+
+        if (!name || !phone || !password) return alert("እባክዎ ሁሉንም መረጃዎች ያስገቡ");
+
+        try {
+            const res = await fetch('/api/signup-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('signup-form').style.display = 'none';
+                document.getElementById('otp-form').style.display = 'block';
+                const hint = document.getElementById('otp-hint');
+                if (hint) hint.innerText = data.message;
+                // For testing convenience
+                if (data.otp) document.getElementById('otp-code').value = data.otp;
+            } else {
+                errorEl.innerText = data.error;
+            }
+        } catch (e) { console.error(e); }
+    };
+}
+
+const verifyOtpBtn = document.getElementById('verify-otp');
+if (verifyOtpBtn) {
+    verifyOtpBtn.onclick = async () => {
+        const name = document.getElementById('signup-name').value;
+        const phone = document.getElementById('signup-phone').value;
+        const password = document.getElementById('signup-pass').value;
+        const otp = document.getElementById('otp-code').value;
+        const errorEl = document.getElementById('auth-error');
+
+        try {
+            const res = await fetch('/api/signup-verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, password, name, otp })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('bingo_token', data.token);
+                updateUserData(data);
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                navTo('stake');
+                initApp();
+            } else {
+                errorEl.innerText = data.error;
+            }
+        } catch (e) { console.error(e); }
+    };
+}
 
 initApp();

@@ -47,7 +47,7 @@ app.post('/api/signup-request', async (req, res) => {
         
         console.log(`\n--- OTP VERIFICATION ---\nPhone: ${phone}\nCode: ${otp}\n------------------------\n`);
         
-        res.json({ message: "OTP sent" });
+        res.json({ message: "የማረጋገጫ ኮድ ተልኳል። (ለሙከራ ኮዱ: " + otp + " ነው)", otp: otp });
     } catch (err) {
         console.error('Signup Request Error:', err);
         res.status(500).json({ error: "የሰርቨር ስህተት አጋጥሟል: " + err.message });
@@ -66,9 +66,10 @@ app.post('/api/signup-verify', async (req, res) => {
         delete pendingOTP[phone];
 
         const hash = await bcrypt.hash(password, 10);
+        const playerId = 'PL' + Math.floor(1000 + Math.random() * 9000);
         const result = await db.query(
-            'INSERT INTO users (phone_number, password_hash, username, name, balance) VALUES ($1, $2, $3, $4, 100) RETURNING *',
-            [phone, hash, phone, name]
+            'INSERT INTO users (phone_number, password_hash, username, name, balance, player_id) VALUES ($1, $2, $3, $4, 100, $5) RETURNING *',
+            [phone, hash, phone, name, playerId]
         );
         const user = result.rows[0];
         const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin }, SECRET_KEY);
