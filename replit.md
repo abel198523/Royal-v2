@@ -32,8 +32,11 @@ A web-based Bingo game application with real-time gameplay using WebSockets.
 ## API Endpoints
 - `POST /api/login` - User authentication with phone and password
 
-## WebSocket Events
-- `INIT` - Sent on connection with game history
-- `NEW_BALL` - Broadcast when new ball is drawn
-- `GAME_START` - Broadcast when new game starts
-- `BUY_CARD` - Client message to purchase a card
+## Deployment (Render.com)
+- **Environment Variables**: Ensure `DATABASE_URL` (PostgreSQL), `SESSION_SECRET`, and `JWT_SECRET` are configured in Render.
+- **Build Command**: `npm install`
+- **Start Command**: `node server.js`
+- **Port**: Render automatically detects the port, but the app is configured to listen on `process.env.PORT || 5000`.
+- **Health Check**: The root path `/` can be used for health checks.
+- **Database**: Uses an external PostgreSQL database (configured via `DATABASE_URL`).
+- **WebSockets**: Ensure "Web Services" is selected on Render to support WebSocket connections.
