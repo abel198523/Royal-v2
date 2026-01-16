@@ -467,9 +467,33 @@ function updateUserData(data) {
     if(profilePhoneEl) profilePhoneEl.innerText = data.phone_number || data.username;
 }
 
+function navTo(screenId) {
+    const screens = ['stake-screen', 'profile-screen', 'wallet-screen', 'game-screen', 'selection-screen', 'admin-screen'];
+    screens.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.classList.remove('active');
+    });
+    
+    const target = document.getElementById(`${screenId}-screen`);
+    if (target) {
+        target.classList.add('active');
+    }
+    
+    // Auto-close menu on mobile
+    const sideMenu = document.getElementById('side-menu');
+    const overlay = document.getElementById('menu-overlay');
+    if (sideMenu) sideMenu.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+}
+
+window.navTo = navTo;
+
 document.getElementById('do-login').onclick = async () => {
     const phone = document.getElementById('login-phone').value;
     const password = document.getElementById('login-pass').value;
+    const errorEl = document.getElementById('auth-error');
+    if (errorEl) errorEl.innerText = '';
+
     try {
         const res = await fetch('/api/login', {
             method: 'POST',
@@ -480,13 +504,21 @@ document.getElementById('do-login').onclick = async () => {
         if (res.ok) {
             localStorage.setItem('bingo_token', data.token);
             updateUserData(data);
+            document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
+            
+            // Show the stake screen by default
+            navTo('stake');
+            
             initApp();
         } else {
-            document.getElementById('auth-error').innerText = data.error;
+            if (errorEl) errorEl.innerText = data.error || 'Login failed';
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e);
+        if (errorEl) errorEl.innerText = 'Connection error';
+    }
 };
 
 initApp();
