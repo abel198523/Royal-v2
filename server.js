@@ -75,7 +75,8 @@ app.post('/api/signup-verify', async (req, res) => {
         const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin }, SECRET_KEY);
         res.json({ token, username: user.username, balance: user.balance, name: user.name, player_id: user.player_id, is_admin: user.is_admin });
     } catch (err) {
-        res.status(500).json({ error: "ምዝገባው አልተሳካም" });
+        console.error('Signup Verify Error:', err);
+        res.status(500).json({ error: "ምዝገባው አልተሳካም: " + err.message });
     }
 });
 
