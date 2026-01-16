@@ -517,6 +517,22 @@ document.getElementById('do-login').onclick = async () => {
             updateUserData(data);
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('main-content').style.display = 'block';
+            
+            // Hide all other screens first
+            const screens = ['selection-screen', 'profile-screen', 'wallet-screen', 'game-screen'];
+            screens.forEach(s => {
+                const el = document.getElementById(s);
+                if (el) el.classList.remove('active');
+            });
+            
+            // Hide all other screens first
+            const screens = ['selection-screen', 'profile-screen', 'wallet-screen', 'game-screen'];
+            screens.forEach(s => {
+                const el = document.getElementById(s);
+                if (el) el.classList.remove('active');
+            });
+            
+            // Show stake-screen after login
             document.getElementById('stake-screen').classList.add('active');
         } else {
             errorEl.innerText = data.error || 'Login failed';
@@ -580,6 +596,22 @@ document.getElementById('verify-otp').onclick = async () => {
             updateUserData(data);
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('main-content').style.display = 'block';
+            
+            // Hide all other screens first
+            const screens = ['selection-screen', 'profile-screen', 'wallet-screen', 'game-screen'];
+            screens.forEach(s => {
+                const el = document.getElementById(s);
+                if (el) el.classList.remove('active');
+            });
+            
+            // Hide all other screens first
+            const screens = ['selection-screen', 'profile-screen', 'wallet-screen', 'game-screen'];
+            screens.forEach(s => {
+                const el = document.getElementById(s);
+                if (el) el.classList.remove('active');
+            });
+            
+            // Show stake-screen after login
             document.getElementById('stake-screen').classList.add('active');
         } else {
             errorEl.innerText = data.error || 'Verification failed';
