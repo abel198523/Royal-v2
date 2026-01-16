@@ -159,6 +159,13 @@ app.post('/api/admin/approve-deposit', adminOnly, async (req, res) => {
         await db.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [amount, user_id]);
         await db.query('UPDATE deposit_requests SET status = $1 WHERE id = $2', ['approved', depositId]);
         
+        // Log history
+        const userRes = await db.query('SELECT balance FROM users WHERE id = $1', [user_id]);
+        await db.query(
+            'INSERT INTO balance_history (user_id, type, amount, balance_after, description) VALUES ($1, $2, $3, $4, $5)',
+            [user_id, 'deposit', amount, userRes.rows[0].balance, `Approved Deposit (${deposit.rows[0].method})`]
+        );
+        
         await db.query('COMMIT');
         res.json({ message: "ዲፖዚቱ በትክክል ተፈቅዷል" });
     } catch (err) {
@@ -233,6 +240,13 @@ app.post('/api/withdraw-request', async (req, res) => {
             [decoded.id, amount, method, account]
         );
         
+        // Log history
+        const userRes = await db.query('SELECT balance FROM users WHERE id = $1', [decoded.id]);
+        await db.query(
+            'INSERT INTO balance_history (user_id, type, amount, balance_after, description) VALUES ($1, $2, $3, $4, $5)',
+            [decoded.id, 'withdrawal', -amount, userRes.rows[0].balance, `Withdrawal Request (${method})`]
+        );
+        
         await db.query('COMMIT');
         res.json({ message: "የዊዝድሮው ጥያቄዎ ለአድሚን ተልኳል።" });
     } catch (err) {
@@ -269,6 +283,13 @@ app.post('/api/admin/handle-withdraw', adminOnly, async (req, res) => {
             const { user_id, amount } = withdraw.rows[0];
             await db.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [amount, user_id]);
             await db.query('UPDATE withdraw_requests SET status = $1 WHERE id = $2', ['rejected', withdrawId]);
+            
+            // Log history for refund
+            const userRes = await db.query('SELECT balance FROM users WHERE id = $1', [user_id]);
+            await db.query(
+                'INSERT INTO balance_history (user_id, type, amount, balance_after, description) VALUES ($1, $2, $3, $4, $5)',
+                [user_id, 'refund', amount, userRes.rows[0].balance, 'Withdrawal Refund (Rejected)']
+            );
         }
         
         await db.query('COMMIT');
@@ -276,6 +297,18 @@ app.post('/api/admin/handle-withdraw', adminOnly, async (req, res) => {
     } catch (err) {
         await db.query('ROLLBACK');
         res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/balance-history', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Login required" });
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const result = await db.query('SELECT * FROM balance_history WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50', [decoded.id]);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch history" });
     }
 });
 
@@ -530,6 +563,11 @@ wss.on('connection', (ws) => {
                         // Update winner balance in DB
                         try {
                             await db.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [winAmount, playerWs.userId]);
+                            const winnerRes = await db.query('SELECT balance FROM users WHERE id = $1', [playerWs.userId]);
+                            await db.query(
+                                'INSERT INTO balance_history (user_id, type, amount, balance_after, description) VALUES ($1, $2, $3, $4, $5)',
+                                [playerWs.userId, 'win', winAmount, winnerRes.rows[0].balance, `Bingo Win (Room ${data.room})`]
+                            );
                             console.log(`User ${playerWs.userId} won ${winAmount} in Room ${data.room}`);
                         } catch (err) {
                             console.error('Win Update Error:', err);
@@ -612,6 +650,12 @@ wss.on('connection', (ws) => {
                 await db.query('UPDATE users SET balance = balance - $1 WHERE id = $2', [stake, ws.userId]);
                 const updatedUser = await db.query('SELECT balance FROM users WHERE id = $1', [ws.userId]);
                 
+                // Log history
+                await db.query(
+                    'INSERT INTO balance_history (user_id, type, amount, balance_after, description) VALUES ($1, $2, $3, $4, $5)',
+                    [ws.userId, 'stake', -stake, updatedUser.rows[0].balance, `Game Stake (Room ${ws.room})`]
+                );
+
                 // Notify client of new balance
                 ws.send(JSON.stringify({ 
                     type: 'BALANCE_UPDATE', 
@@ -664,6 +708,16 @@ async function initDatabase() {
                 balance DECIMAL(10, 2) DEFAULT 100,
                 player_id VARCHAR(20),
                 is_admin BOOLEAN DEFAULT FALSE
+            );
+
+            CREATE TABLE IF NOT EXISTS balance_history (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                type VARCHAR(50), -- 'deposit', 'withdrawal', 'stake', 'win'
+                amount DECIMAL(10, 2) NOT NULL,
+                balance_after DECIMAL(10, 2),
+                description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
             -- Ensure columns exist for existing tables

@@ -150,7 +150,28 @@
                         </div>
                     </div>
                     
-                    <!-- Deposit Form -->
+                    <div class="history-section">
+                        <h3 style="margin-bottom: 15px; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Balance History
+                        </h3>
+                        <div id="balance-history-list" class="history-list">
+                            <!-- History items injected by JS -->
+                            <p class="empty-msg">No transactions yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposit Screen -->
+            <div id="deposit-screen" class="deposit-screen">
+                <div class="selection-header">
+                    <button class="back-btn" onclick="navTo('stake')">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    </button>
+                    <div class="selection-title">Deposit</div>
+                </div>
+                <div class="wallet-content">
                     <div class="deposit-section">
                         <h3 style="margin-bottom: 15px; font-size: 1.1rem;">Deposit Money</h3>
                         <div class="input-group">

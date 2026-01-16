@@ -1,3 +1,97 @@
+/* Balance History Styles */
+.history-section {
+    margin-top: 25px;
+    padding-bottom: 20px;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.history-item {
+    background: #1e2533;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #374151;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hist-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hist-type {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    width: fit-content;
+}
+
+.hist-type.deposit { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.hist-type.withdrawal { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.hist-type.stake { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.hist-type.win { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.hist-type.refund { background: rgba(148, 163, 184, 0.1); color: #94a3b8; }
+
+.hist-desc {
+    font-size: 13px;
+    color: var(--text-white);
+    font-weight: 500;
+}
+
+.hist-meta {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hist-amount {
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.hist-amount.plus { color: #22c55e; }
+.hist-amount.minus { color: #ef4444; }
+
+.hist-date {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.empty-msg {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 20px;
+    font-style: italic;
+}
+
+.deposit-screen, .withdraw-screen {
+    display: none;
+    padding-top: 70px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0c111d;
+    z-index: 150;
+    box-sizing: border-box;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.deposit-screen.active, .withdraw-screen.active {
+    display: flex;
+}
+
 /* Sidebar Styles */
 .side-menu {
     position: fixed;
