@@ -527,6 +527,7 @@ document.getElementById('do-login').onclick = async () => {
             
             // Show stake-screen after login
             document.getElementById('stake-screen').classList.add('active');
+            console.log("Navigation: Showing stake-screen after login");
         } else {
             errorEl.innerText = data.error || 'Login failed';
         }
@@ -599,6 +600,7 @@ document.getElementById('verify-otp').onclick = async () => {
             
             // Show stake-screen after login
             document.getElementById('stake-screen').classList.add('active');
+            console.log("Navigation: Showing stake-screen after login");
         } else {
             errorEl.innerText = data.error || 'Verification failed';
         }
