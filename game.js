@@ -178,6 +178,26 @@ socket.onmessage = (event) => {
     }
 };
 
+// Bingo Button Logic
+const bingoBtn = document.getElementById('bingo-btn');
+if (bingoBtn) {
+    bingoBtn.onclick = () => {
+        if (!myGameCard || !currentRoom) return;
+        
+        console.log('Bingo clicked!');
+        // Here you would normally send a BINGO event to the server
+        socket.send(JSON.stringify({
+            type: 'BINGO_CLAIM',
+            room: currentRoom,
+            cardNumber: currentSelectedCard
+        }));
+        
+        // Visual feedback
+        bingoBtn.style.transform = 'scale(0.95)';
+        setTimeout(() => bingoBtn.style.transform = 'scale(1)', 100);
+    };
+}
+
 function startGame() {
     // Hide all other screens
     const screens = ['selection-screen', 'stake-screen', 'profile-screen', 'wallet-screen', 'game-screen'];
