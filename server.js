@@ -391,37 +391,47 @@ wss.on('connection', (ws) => {
             const room = rooms[data.room];
             if (!room || !room.gameInterval) return;
 
-            // Find the player who claimed
+            // Find the player who claimed in THIS room
             let playerWs = null;
             room.players.forEach(p => {
-                if (p.cardNumber === data.cardNumber) playerWs = p;
+                // Check room-specific card data
+                const roomData = p.roomData ? p.roomData[data.room] : null;
+                const cardNumber = roomData ? roomData.cardNumber : p.cardNumber;
+                if (cardNumber === data.cardNumber) playerWs = p;
             });
 
-            if (playerWs && playerWs.cardData) {
-                const winInfo = checkWin(playerWs.cardData, room.drawnBalls);
-                if (winInfo) {
-                    // Winner found! Stop the game and broadcast
-                    clearInterval(room.gameInterval);
-                    room.gameInterval = null;
+            if (playerWs) {
+                const roomData = playerWs.roomData ? playerWs.roomData[data.room] : null;
+                const cardData = roomData ? roomData.cardData : playerWs.cardData;
 
-                    broadcastToRoom(data.room, {
-                        type: 'GAME_OVER',
-                        winner: playerWs.name || playerWs.username || 'ተጫዋች',
-                        message: `🎉 ቢንጎ! ${playerWs.name || playerWs.username} አሸንፏል!`,
-                        winCard: playerWs.cardData,
-                        winPattern: winInfo.pattern
-                    });
+                if (cardData) {
+                    const winInfo = checkWin(cardData, room.drawnBalls);
+                    if (winInfo) {
+                        // Winner found! Stop the game and broadcast
+                        clearInterval(room.gameInterval);
+                        room.gameInterval = null;
 
-                    // Reset for next game
-                    room.players.forEach(p => {
-                        p.cardNumber = null;
-                        p.cardData = null;
-                    });
-                    
-                    updateGlobalStats();
-                    setTimeout(() => startRoomCountdown(data.room), 5000);
-                } else {
-                    ws.send(JSON.stringify({ type: 'ERROR', message: 'ቢንጎ ገና አልሞላም!' }));
+                        broadcastToRoom(data.room, {
+                            type: 'GAME_OVER',
+                            winner: playerWs.name || playerWs.username || 'ተጫዋች',
+                            message: `🎉 ቢንጎ! ${playerWs.name || playerWs.username} አሸንፏል!`,
+                            winCard: cardData,
+                            winPattern: winInfo.pattern,
+                            room: data.room
+                        });
+
+                        // Reset for next game in THIS room
+                        room.players.forEach(p => {
+                            if (p.roomData) delete p.roomData[data.room];
+                            p.cardNumber = null;
+                            p.cardData = null;
+                        });
+                        
+                        updateGlobalStats();
+                        setTimeout(() => startRoomCountdown(data.room), 5000);
+                    } else {
+                        ws.send(JSON.stringify({ type: 'ERROR', message: 'ቢንጎ ገና አልሞላም!' }));
+                    }
                 }
             }
         }
@@ -455,8 +465,17 @@ wss.on('connection', (ws) => {
         
         if (data.type === 'BUY_CARD') {
             if (!ws.room) return;
+            // Store card data per room on the connection object
+            if (!ws.roomData) ws.roomData = {};
+            ws.roomData[data.room] = {
+                cardNumber: data.cardNumber,
+                cardData: data.cardData
+            };
+            
+            // For backward compatibility or single-room focus
             ws.cardNumber = data.cardNumber;
-            ws.cardData = data.cardData; // Store card data for validation
+            ws.cardData = data.cardData;
+            
             console.log(`Room ${ws.room}: Card ${data.cardNumber} bought`);
             updateGlobalStats();
         }
