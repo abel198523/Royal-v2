@@ -359,8 +359,12 @@ window.joinStake = (amount) => {
     currentRoom = amount;
     socket.send(JSON.stringify({ type: 'JOIN_ROOM', room: amount }));
     
+    // Update stake label in selection screen
+    const stakeLabel = document.getElementById('sel-stake-amount');
+    if (stakeLabel) stakeLabel.innerText = `${amount} ETB`;
+    
     // Switch to selection screen (card board)
-    const screens = ['stake-screen', 'profile-screen', 'wallet-screen'];
+    const screens = ['stake-screen', 'profile-screen', 'wallet-screen', 'game-screen'];
     screens.forEach(s => {
         const el = document.getElementById(s);
         if (el) el.classList.remove('active');
@@ -513,7 +517,7 @@ document.getElementById('do-login').onclick = async () => {
             updateUserData(data);
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('main-content').style.display = 'block';
-            document.getElementById('selection-screen').classList.add('active');
+            document.getElementById('stake-screen').classList.add('active');
         } else {
             errorEl.innerText = data.error || 'Login failed';
         }
@@ -576,7 +580,7 @@ document.getElementById('verify-otp').onclick = async () => {
             updateUserData(data);
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('main-content').style.display = 'block';
-            document.getElementById('selection-screen').classList.add('active');
+            document.getElementById('stake-screen').classList.add('active');
         } else {
             errorEl.innerText = data.error || 'Verification failed';
         }
