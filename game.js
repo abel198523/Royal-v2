@@ -596,6 +596,19 @@ function updateUserData(user) {
     }
 }
 
+window.promptAdminPassword = () => {
+    const password = prompt("እባክዎን የአድሚን ፓስወርድ ያስገቡ:");
+    if (password === "admin123") { // Temporary hardcoded password for demonstration
+        navTo('admin');
+    } else if (password !== null) {
+        alert("የተሳሳተ ፓስወርድ ነው!");
+    }
+};
+            adminMenuItem.style.display = 'none';
+        }
+    }
+}
+
 // Sidebar Logic
 const sideMenu = document.getElementById('side-menu');
 const menuOverlay = document.getElementById('menu-overlay');
