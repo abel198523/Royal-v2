@@ -98,15 +98,25 @@
     margin: 12px 0;
 }
 
-.menu-trigger {
+.back-btn {
     background: none;
     border: none;
     color: white;
     cursor: pointer;
-    padding: 4px;
+    padding: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.back-btn svg {
+    stroke-width: 2.5px;
 }
 
 :root {
