@@ -258,6 +258,25 @@ let lastHistory = [];
 
 function updateGameUI(history) {
     lastHistory = history;
+    
+    // Update Master Grid
+    const masterGrid = document.getElementById('master-grid');
+    if (masterGrid) {
+        masterGrid.innerHTML = '';
+        for (let i = 1; i <= 75; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'master-cell';
+            cell.innerText = i;
+            if (history.includes(i)) {
+                cell.classList.add('called');
+                if (i === history[history.length - 1]) {
+                    cell.classList.add('last-called');
+                }
+            }
+            masterGrid.appendChild(cell);
+        }
+    }
+
     if (history.length === 0) {
         activeBall.innerText = '--';
         recentBalls.innerHTML = '';
