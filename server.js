@@ -191,7 +191,7 @@ app.post('/api/sms-webhook', async (req, res) => {
     const { message, sender, secret } = req.body;
     
     // ለደህንነት ሲባል ሚስጥራዊ ቁልፍ (Secret Key) ማረጋገጥ ይቻላል
-    if (secret !== "fidel_sms_secret_9988") {
+    if (secret !== "85Ethiopia@") {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
