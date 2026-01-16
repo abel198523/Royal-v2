@@ -145,13 +145,13 @@ body {
     height: 100vh;
     overflow: hidden;
     background: var(--bg-dark);
-    display: none;
+    display: none !important;
     flex-direction: column;
     z-index: 500;
 }
 
 .game-screen.active {
-    display: flex;
+    display: flex !important;
 }
 
 .game-container {

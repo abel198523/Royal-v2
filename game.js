@@ -180,20 +180,21 @@ socket.onmessage = (event) => {
 
 function startGame() {
     // Hide all other screens
-    const screens = ['selection-screen', 'stake-screen', 'profile-screen', 'wallet-screen'];
+    const screens = ['selection-screen', 'stake-screen', 'profile-screen', 'wallet-screen', 'game-screen'];
     screens.forEach(s => {
         const el = document.getElementById(s);
         if (el) el.classList.remove('active');
     });
     
-    // Show game screen
+    // Show game screen ONLY here
     const gameScreen = document.getElementById('game-screen');
-    if (gameScreen) gameScreen.classList.add('active');
+    if (gameScreen) {
+        gameScreen.classList.add('active');
+        console.log('Navigation: Showing game-screen because game started');
+    }
     
     // Render the selected card on the board
     renderMyGameCard();
-    
-    console.log('Game started, showing game board with player card');
 }
 
 function getBallLetter(num) {
