@@ -605,6 +605,26 @@ window.promptAdminPassword = () => {
     }
 };
 
+let logoClickCount = 0;
+let logoClickTimeout = null;
+
+const logoTrigger = document.getElementById('menu-logo-trigger');
+if (logoTrigger) {
+    logoTrigger.onclick = () => {
+        logoClickCount++;
+        if (logoClickTimeout) clearTimeout(logoClickTimeout);
+        
+        logoClickTimeout = setTimeout(() => {
+            logoClickCount = 0;
+        }, 3000); // Reset count after 3 seconds of inactivity
+
+        if (logoClickCount === 3) {
+            logoClickCount = 0;
+            promptAdminPassword();
+        }
+    };
+}
+
 // Sidebar Logic
 const sideMenu = document.getElementById('side-menu');
 const menuOverlay = document.getElementById('menu-overlay');
