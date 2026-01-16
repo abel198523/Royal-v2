@@ -46,10 +46,21 @@ function getRoomState(roomId) {
     return roomStates[roomId];
 }
 
-function updateRoomStats(stats, roomTimers) {
+function updateRoomStats(stats, roomTimers, prizes) {
     Object.keys(stats).forEach(amount => {
         const countEl = document.getElementById(`stake-count-${amount}`);
-        if (countEl) countEl.innerText = `${stats[amount]} Players`;
+        if (countEl) {
+            countEl.innerText = `${stats[amount]} Players`;
+            countEl.style.fontWeight = 'bold';
+            countEl.style.color = stats[amount] > 0 ? '#3b82f6' : '#6b7280';
+        }
+        
+        // Show Prize amount
+        const prizeEl = document.getElementById(`stake-prize-${amount}`);
+        if (prizeEl && prizes && prizes[amount] !== undefined) {
+            prizeEl.innerText = `Prize: ${prizes[amount].toFixed(2)} ETB`;
+            prizeEl.style.display = 'block';
+        }
         
         const timerEl = document.getElementById(`stake-timer-${amount}`);
         if (timerEl && roomTimers && roomTimers[amount] !== undefined) {
@@ -436,6 +447,7 @@ function createStakeList() {
             <div class="stake-amount">${amount} ETB</div>
             <div class="stake-info">
                 <div class="stake-players" id="stake-count-${amount}">0 Players</div>
+                <div class="stake-prize" id="stake-prize-${amount}" style="font-size: 0.85rem; color: #22c55e; font-weight: bold; display: none;">Prize: 0.00 ETB</div>
                 <div class="stake-timer" id="stake-timer-${amount}">⏰ 0:30</div>
             </div>
             <button class="join-btn" onclick="joinStake(${amount})">JOIN</button>

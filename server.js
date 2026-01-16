@@ -383,20 +383,36 @@ function updateGlobalStats() {
     const stats = {};
     const timers = {};
     const takenCards = {};
+    const prizes = {};
+    
     STAKES.forEach(amount => {
         if (rooms[amount]) {
-            stats[amount] = rooms[amount].players.size;
+            const playersWithCards = Array.from(rooms[amount].players).filter(p => {
+                const roomData = p.roomData ? p.roomData[amount] : null;
+                return p.cardNumber || (roomData && roomData.cardNumber);
+            });
+            
+            stats[amount] = playersWithCards.length;
             timers[amount] = rooms[amount].gameInterval ? 'PLAYING' : rooms[amount].gameCountdown;
+            
+            // Prize calculation logic
+            const playersCount = playersWithCards.length;
+            const totalPool = amount * playersCount;
+            let winnerShare = 0.8; 
+            if (amount === 5) winnerShare = 0.9;
+            prizes[amount] = totalPool * winnerShare;
             
             // Collect taken card numbers for this room
             const roomTaken = [];
             rooms[amount].players.forEach(p => {
-                if (p.cardNumber) roomTaken.push(p.cardNumber);
+                const rData = p.roomData ? p.roomData[amount] : null;
+                const cNum = rData ? rData.cardNumber : p.cardNumber;
+                if (cNum) roomTaken.push(cNum);
             });
             takenCards[amount] = roomTaken;
         }
     });
-    broadcastAll({ type: 'ROOM_STATS', stats, timers, takenCards });
+    broadcastAll({ type: 'ROOM_STATS', stats, timers, takenCards, prizes });
 }
 
 function checkWin(cardData, drawnBalls) {
