@@ -151,19 +151,35 @@ function showToast(message) {
     setTimeout(() => toast.classList.remove('active'), 3000);
 }
 
-function showWinnerModal(name) {
+function showWinnerModal(name, winCard, winPattern) {
     const modal = document.getElementById('winner-modal');
     const nameEl = document.getElementById('winner-display-name');
-    if (!modal || !nameEl) return;
+    const cardCont = document.getElementById('winner-card-container');
+    if (!modal || !nameEl || !cardCont) return;
     
     nameEl.innerText = name;
+    
+    // Render the winning card
+    cardCont.innerHTML = '';
+    if (winCard && winPattern) {
+        const letters = ['B', 'I', 'N', 'G', 'O'];
+        for (let row = 0; row < 5; row++) {
+            letters.forEach(l => {
+                const val = winCard[l][row];
+                const cell = document.createElement('div');
+                cell.className = 'win-cell';
+                cell.innerText = val === 'FREE' ? '★' : val;
+                
+                if (winPattern.includes(val) || val === 'FREE') {
+                    cell.classList.add('highlight');
+                }
+                cardCont.appendChild(cell);
+            });
+        }
+    }
+    
     modal.classList.add('active');
 }
-
-window.closeWinnerModal = () => {
-    const modal = document.getElementById('winner-modal');
-    if (modal) modal.classList.remove('active');
-};
 
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
@@ -190,7 +206,7 @@ socket.onmessage = (event) => {
         if (data.room == currentRoom) startGame();
     } else if (data.type === 'GAME_OVER') {
         if (data.room == currentRoom || !data.room) {
-            showWinnerModal(data.winner);
+            showWinnerModal(data.winner, data.winCard, data.winPattern);
             // Return to stake selection after a delay
             setTimeout(() => {
                 closeWinnerModal();
@@ -200,7 +216,7 @@ socket.onmessage = (event) => {
                     if (el) el.classList.remove('active');
                 });
                 document.getElementById('stake-screen').classList.add('active');
-            }, 5000);
+            }, 8000); // Extended time to see the card
         }
     } else if (data.type === 'ERROR') {
         showToast(data.message);

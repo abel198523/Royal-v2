@@ -330,7 +330,7 @@ function updateGlobalStats() {
 }
 
 function checkWin(cardData, drawnBalls) {
-    if (!cardData) return false;
+    if (!cardData) return null;
     const drawnSet = new Set(drawnBalls);
     drawnSet.add('FREE');
 
@@ -340,35 +340,47 @@ function checkWin(cardData, drawnBalls) {
     // Check Rows
     for (let r = 0; r < 5; r++) {
         let win = true;
+        let pattern = [];
         for (let c = 0; c < 5; c++) {
+            pattern.push(grid[c][r]);
             if (!drawnSet.has(grid[c][r])) { win = false; break; }
         }
-        if (win) return true;
+        if (win) return { type: 'ROW', pattern };
     }
 
     // Check Columns
     for (let c = 0; c < 5; c++) {
         let win = true;
+        let pattern = [];
         for (let r = 0; r < 5; r++) {
+            pattern.push(grid[c][r]);
             if (!drawnSet.has(grid[c][r])) { win = false; break; }
         }
-        if (win) return true;
+        if (win) return { type: 'COLUMN', pattern };
     }
 
     // Check Diagonals
     let diag1 = true;
+    let diag1Pattern = [];
     let diag2 = true;
+    let diag2Pattern = [];
     for (let i = 0; i < 5; i++) {
+        diag1Pattern.push(grid[i][i]);
         if (!drawnSet.has(grid[i][i])) diag1 = false;
+        
+        diag2Pattern.push(grid[i][4 - i]);
         if (!drawnSet.has(grid[i][4 - i])) diag2 = false;
     }
-    if (diag1 || diag2) return true;
+    if (diag1) return { type: 'DIAGONAL', pattern: diag1Pattern };
+    if (diag2) return { type: 'DIAGONAL', pattern: diag2Pattern };
 
     // Check Corners
     if (drawnSet.has(grid[0][0]) && drawnSet.has(grid[4][0]) && 
-        drawnSet.has(grid[0][4]) && drawnSet.has(grid[4][4])) return true;
+        drawnSet.has(grid[0][4]) && drawnSet.has(grid[4][4])) {
+        return { type: 'CORNERS', pattern: [grid[0][0], grid[4][0], grid[0][4], grid[4][4]] };
+    }
 
-    return false;
+    return null;
 }
 
 wss.on('connection', (ws) => {
@@ -386,8 +398,8 @@ wss.on('connection', (ws) => {
             });
 
             if (playerWs && playerWs.cardData) {
-                const isWin = checkWin(playerWs.cardData, room.drawnBalls);
-                if (isWin) {
+                const winInfo = checkWin(playerWs.cardData, room.drawnBalls);
+                if (winInfo) {
                     // Winner found! Stop the game and broadcast
                     clearInterval(room.gameInterval);
                     room.gameInterval = null;
@@ -395,7 +407,9 @@ wss.on('connection', (ws) => {
                     broadcastToRoom(data.room, {
                         type: 'GAME_OVER',
                         winner: playerWs.name || playerWs.username || 'ተጫዋች',
-                        message: `🎉 ቢንጎ! ${playerWs.name || playerWs.username} አሸንፏል!`
+                        message: `🎉 ቢንጎ! ${playerWs.name || playerWs.username} አሸንፏል!`,
+                        winCard: playerWs.cardData,
+                        winPattern: winInfo.pattern
                     });
 
                     // Reset for next game
