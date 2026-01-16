@@ -300,11 +300,25 @@ function renderMyGameCard() {
 
     bingoBoard.innerHTML = '';
     
+    // Update card label with number
+    const cardLabel = document.getElementById('my-card-label');
+    if (cardLabel && currentSelectedCard) {
+        cardLabel.innerText = `የእርስዎ ካርድ #${currentSelectedCard}`;
+    }
+
+    // Add B I N G O Headers to the card
+    const letters = ['B', 'I', 'N', 'G', 'O'];
+    letters.forEach(l => {
+        const header = document.createElement('div');
+        header.className = 'bingo-cell card-header-cell';
+        header.innerText = l;
+        bingoBoard.appendChild(header);
+    });
+    
     // Middle spot is FREE
     const cardData = JSON.parse(JSON.stringify(myGameCard));
     cardData['N'][2] = 'FREE';
 
-    const letters = ['B', 'I', 'N', 'G', 'O'];
     for (let row = 0; row < 5; row++) {
         letters.forEach(l => {
             const val = cardData[l][row];
@@ -320,9 +334,6 @@ function renderMyGameCard() {
                 // Add click event for manual marking
                 cell.onclick = () => {
                     if (!autoMarking) {
-                        // Only allow manual marking if it was actually called
-                        // We check the history stored in currentGameState (if we had it)
-                        // For now, let's just allow toggling the 'called' class manually if auto is off
                         cell.classList.toggle('called');
                     }
                 };

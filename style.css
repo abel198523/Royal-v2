@@ -1564,11 +1564,28 @@ header {
     transform: translateY(0);
 }
 
-.player-card-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 3px;
-    width: 100%;
+.card-title-header {
+    text-align: center;
+    margin-bottom: 10px;
+    background: rgba(59, 130, 246, 0.1);
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+#my-card-label {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #60a5fa;
+    letter-spacing: 1px;
+}
+
+.card-header-cell {
+    background: #3b82f6 !important;
+    color: white !important;
+    font-size: 1.2rem !important;
+    font-weight: 900 !important;
+    border: none !important;
 }
 
 .bingo-cell {
