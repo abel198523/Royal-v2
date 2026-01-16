@@ -120,14 +120,128 @@
     --text-muted: #94a3b8;
 }
 
-body {
+/* Global No-Scroll */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
     background-color: #0c111d;
     color: var(--text-white);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    margin: 0;
-    padding: 10px;
+}
+
+body {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+}
+
+/* Game Screen Styles - No Scroll */
+.game-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg-dark);
+    display: none;
+    flex-direction: column;
+    z-index: 500;
+}
+
+.game-screen.active {
+    display: flex;
+}
+
+.game-container {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 15px;
+    padding: 15px;
+    height: 100vh;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Master Grid Container */
+.master-grid-container {
+    background: #1e2533;
+    border-radius: 16px;
+    border: 1px solid #374151;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.master-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Scrollbar styling */
+.master-grid::-webkit-scrollbar, .player-cards-container::-webkit-scrollbar {
+    width: 4px;
+}
+.master-grid::-webkit-scrollbar-thumb, .player-cards-container::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 10px;
+}
+
+/* Right Side */
+.game-right-side {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.current-call-display {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 120px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.player-cards-container {
+    flex: 1;
+    background: #1e2533;
+    border-radius: 16px;
+    border: 1px solid #374151;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Modern Card Styling */
+.bingo-card {
+    background: white;
+    border-radius: 12px;
+    padding: 10px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    aspect-ratio: 1 / 1;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 /* Auth Screens */
