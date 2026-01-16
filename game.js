@@ -453,6 +453,33 @@ function initApp() {
     createBingoNumbers();
     createStakeList();
     createAvailableCards();
+
+    // Sidebar triggers
+    const menuTriggers = document.querySelectorAll('.menu-trigger');
+    const sideMenu = document.getElementById('side-menu');
+    const overlay = document.getElementById('menu-overlay');
+    const closeBtn = document.getElementById('close-menu');
+
+    menuTriggers.forEach(btn => {
+        btn.onclick = () => {
+            if (sideMenu) sideMenu.classList.add('active');
+            if (overlay) overlay.classList.add('active');
+        };
+    });
+
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            if (sideMenu) sideMenu.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
+        };
+    }
+
+    if (overlay) {
+        overlay.onclick = () => {
+            if (sideMenu) sideMenu.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
+        };
+    }
 }
 
 // Authentication Logic
