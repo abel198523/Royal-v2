@@ -206,6 +206,7 @@ function getBallLetter(num) {
 
 let autoMarking = true;
 
+// Toggle handles UI and logic
 const autoToggle = document.getElementById('auto-toggle');
 if (autoToggle) {
     autoToggle.classList.add('active'); // Default to ON
@@ -259,26 +260,40 @@ let lastHistory = [];
 function updateGameUI(history) {
     lastHistory = history;
     
+    // Update Counts for B-I-N-G-O headers
+    const counts = { B: 0, I: 0, N: 0, G: 0, O: 0 };
+    history.forEach(n => {
+        counts[getBallLetter(n)]++;
+    });
+    Object.keys(counts).forEach(l => {
+        const el = document.querySelector(`.h-${l}`);
+        if (el) el.setAttribute('data-count', counts[l]);
+    });
+
     // Update Master Grid
     const masterGrid = document.getElementById('master-grid');
     if (masterGrid) {
         masterGrid.innerHTML = '';
-        for (let i = 1; i <= 75; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'master-cell';
-            cell.innerText = i;
-            if (history.includes(i)) {
-                cell.classList.add('called');
-                if (i === history[history.length - 1]) {
-                    cell.classList.add('last-called');
+        // Screenshot shows 5 columns (B, I, N, G, O) and numbers 1-15, 16-30...
+        for (let row = 0; row < 15; row++) {
+            for (let col = 0; col < 5; col++) {
+                const num = (col * 15) + row + 1;
+                const cell = document.createElement('div');
+                cell.className = 'master-cell';
+                cell.innerText = num;
+                if (history.includes(num)) {
+                    cell.classList.add('called');
+                    if (num === history[history.length - 1]) {
+                        cell.classList.add('last-called');
+                    }
                 }
+                masterGrid.appendChild(cell);
             }
-            masterGrid.appendChild(cell);
         }
     }
 
     if (history.length === 0) {
-        activeBall.innerText = '--';
+        activeBall.innerHTML = '<span>--</span>';
         recentBalls.innerHTML = '';
         if (myGameCard) renderMyGameCard();
         return;
@@ -286,8 +301,7 @@ function updateGameUI(history) {
     
     const lastBall = history[history.length - 1];
     const letter = getBallLetter(lastBall);
-    activeBall.innerText = `${letter}${lastBall}`;
-    activeBall.parentElement.style.borderColor = colors[letter];
+    activeBall.innerHTML = `<span>${letter}${lastBall}</span>`;
 
     // Mark called numbers on the player's card ONLY IF AUTO IS ON
     if (autoMarking) {
@@ -295,24 +309,14 @@ function updateGameUI(history) {
             const el = document.getElementById(`cell-${num}`);
             if (el) {
                 el.classList.add('called');
-                if (index === history.length - 1) {
-                    el.classList.add('last-called');
-                } else {
-                    el.classList.remove('last-called');
-                }
             }
         });
-    } else {
-        // If auto is off, still update last-called highlight if the player already marked it
-        document.querySelectorAll('.bingo-cell.last-called').forEach(el => el.classList.remove('last-called'));
-        const el = document.getElementById(`cell-${lastBall}`);
-        if (el && el.classList.contains('called')) {
-            el.classList.add('last-called');
-        }
     }
 
     // Update progress
-    callCount.innerText = history.length;
+    const callsEl = document.getElementById('call-count');
+    if (callsEl) callsEl.innerText = history.length;
+    
     progressText.innerText = `${history.length}/75`;
     progressBar.style.width = `${(history.length / 75) * 100}%`;
 
