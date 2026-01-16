@@ -513,12 +513,104 @@ function initApp() {
 // Authentication Logic
 let userBalance = 0;
 // Admin Panel Logic
+// Withdraw Logic
+const submitWithdraw = document.getElementById('submit-withdraw');
+if (submitWithdraw) {
+    submitWithdraw.onclick = async () => {
+        const amount = parseFloat(document.getElementById('withdraw-amount').value);
+        const method = document.getElementById('withdraw-method').value;
+        const account = document.getElementById('withdraw-account').value;
+        const statusEl = document.getElementById('withdraw-status');
+        const token = localStorage.getItem('bingo_token');
+
+        if (isNaN(amount) || amount < 50) return alert("Minimum withdrawal is 50 ETB");
+        if (!account) return alert("Please enter account details");
+
+        try {
+            const res = await fetch('/api/withdraw-request', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ amount, method, account })
+            });
+            const data = await res.json();
+            statusEl.innerText = data.message || data.error;
+            if (res.ok) {
+                // Balance update will come via WS if needed, but let's refresh UI locally for better UX
+                userBalance -= amount;
+                updateBalanceDisplay();
+            }
+        } catch (e) { console.error(e); }
+    };
+}
+
+function updateBalanceDisplay() {
+    const val = userBalance.toFixed(2);
+    const els = ['sel-balance', 'wallet-balance-value', 'withdraw-balance-value', 'admin-user-balance'];
+    els.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val;
+    });
+}
+
+// Update Admin Panel Logic to include Withdrawals tab
 window.switchAdminTab = (tabName) => {
     document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(`admin-${tabName}-tab`).classList.add('active');
-    event.target.classList.add('active');
+    if (event && event.target) event.target.classList.add('active');
+    
     if (tabName === 'deposits') loadPendingDeposits();
+    if (tabName === 'withdrawals') loadPendingWithdrawals();
+};
+
+async function loadPendingWithdrawals() {
+    const listEl = document.getElementById('admin-withdrawals-list');
+    const token = localStorage.getItem('bingo_token');
+    try {
+        const res = await fetch('/api/admin/withdrawals', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const withdrawals = await res.json();
+        if (withdrawals.length === 0) {
+            listEl.innerHTML = '<p class="empty-msg">No pending withdrawal requests.</p>';
+            return;
+        }
+        listEl.innerHTML = withdrawals.map(w => `
+            <div class="deposit-request-card">
+                <div class="deposit-info">
+                    <p><strong>User:</strong> ${w.name || w.phone_number}</p>
+                    <p><strong>Phone:</strong> ${w.phone_number}</p>
+                    <p><strong>Amount:</strong> ${w.amount} ETB</p>
+                    <p><strong>Method:</strong> ${w.method}</p>
+                    <p><strong>Account:</strong> ${w.account_details}</p>
+                </div>
+                <div class="deposit-actions">
+                    <button class="approve-btn" onclick="handleWithdraw('${w.id}', 'approve')">Approve</button>
+                    <button class="reject-btn" onclick="handleWithdraw('${w.id}', 'reject')">Reject</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) { console.error(e); }
+}
+
+window.handleWithdraw = async (id, action) => {
+    const token = localStorage.getItem('bingo_token');
+    try {
+        const res = await fetch('/api/admin/handle-withdraw', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ withdrawId: id, action })
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadPendingWithdrawals();
+    } catch (e) { console.error(e); }
 };
 
 async function loadPendingDeposits() {

@@ -209,6 +209,74 @@ app.post('/api/admin/update-balance', adminOnly, async (req, res) => {
     }
 });
 
+app.post('/api/withdraw-request', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Login required" });
+    
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const { amount, method, account } = req.body;
+        
+        if (amount < 50) return res.status(400).json({ error: "Minimum withdrawal is 50 ETB" });
+        
+        await db.query('BEGIN');
+        const user = await db.query('SELECT balance FROM users WHERE id = $1', [decoded.id]);
+        if (user.rows[0].balance < amount) {
+            throw new Error("በቂ ባላንስ የልዎትም");
+        }
+        
+        await db.query('UPDATE users SET balance = balance - $1 WHERE id = $2', [amount, decoded.id]);
+        await db.query(
+            'INSERT INTO withdraw_requests (user_id, amount, method, account_details) VALUES ($1, $2, $3, $4)',
+            [decoded.id, amount, method, account]
+        );
+        
+        await db.query('COMMIT');
+        res.json({ message: "የዊዝድሮው ጥያቄዎ ለአድሚን ተልኳል።" });
+    } catch (err) {
+        await db.query('ROLLBACK');
+        res.status(500).json({ error: err.message || "ጥያቄውን መላክ አልተቻለም" });
+    }
+});
+
+app.get('/api/admin/withdrawals', adminOnly, async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT wr.*, u.phone_number, u.name 
+            FROM withdraw_requests wr 
+            JOIN users u ON wr.user_id = u.id 
+            WHERE wr.status = 'pending' 
+            ORDER BY wr.created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: "መረጃውን ማምጣት አልተቻለም" });
+    }
+});
+
+app.post('/api/admin/handle-withdraw', adminOnly, async (req, res) => {
+    const { withdrawId, action } = req.body;
+    try {
+        await db.query('BEGIN');
+        const withdraw = await db.query('SELECT * FROM withdraw_requests WHERE id = $1', [withdrawId]);
+        if (withdraw.rows.length === 0) throw new Error("ጥያቄው አልተገኘም");
+        
+        if (action === 'approve') {
+            await db.query('UPDATE withdraw_requests SET status = $1 WHERE id = $2', ['approved', withdrawId]);
+        } else {
+            const { user_id, amount } = withdraw.rows[0];
+            await db.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [amount, user_id]);
+            await db.query('UPDATE withdraw_requests SET status = $1 WHERE id = $2', ['rejected', withdrawId]);
+        }
+        
+        await db.query('COMMIT');
+        res.json({ message: "ተግባሩ በተሳካ ሁኔታ ተከናውኗል" });
+    } catch (err) {
+        await db.query('ROLLBACK');
+        res.status(500).json({ error: err.message });
+    }
+});
+
 function startRoomCountdown(amount) {
     const room = rooms[amount];
     if (!room) return;
