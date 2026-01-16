@@ -639,7 +639,10 @@ async function loadPendingDeposits() {
                     <p><strong>መጠን:</strong> ${d.amount} ETB</p>
                     <p><strong>መንገድ:</strong> ${d.method}</p>
                     <p><strong>ኮድ:</strong> ${d.transaction_code}</p>
-                    <button onclick="approveDeposit(${d.id})" class="balance-btn add" style="margin-top:10px;">አጽድቅ (Approve)</button>
+                    <div class="btn-group" style="margin-top:10px;">
+                        <button onclick="approveDeposit(${d.id})" class="balance-btn add">አጽድቅ</button>
+                        <button onclick="rejectDeposit(${d.id})" class="balance-btn sub">ውድቅ አድርግ</button>
+                    </div>
                 </div>
             `;
         });
@@ -661,6 +664,23 @@ window.approveDeposit = async (id) => {
     if (!confirm('ይህንን የዲፖዚት ጥያቄ ማጽደቅ ይፈልጋሉ?')) return;
     try {
         const res = await fetch('/api/admin/approve-deposit', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('bingo_token')}`
+            },
+            body: JSON.stringify({ depositId: id })
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadPendingDeposits();
+    } catch (err) { alert('ስህተት ተፈጥሯል'); }
+}
+
+window.rejectDeposit = async (id) => {
+    if (!confirm('ይህንን የዲፖዚት ጥያቄ ውድቅ ማድረግ ይፈልጋሉ?')) return;
+    try {
+        const res = await fetch('/api/admin/reject-deposit', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',

@@ -165,6 +165,17 @@ app.post('/api/admin/approve-deposit', adminOnly, async (req, res) => {
     }
 });
 
+app.post('/api/admin/reject-deposit', adminOnly, async (req, res) => {
+    const { depositId } = req.body;
+    try {
+        const result = await db.query('UPDATE deposit_requests SET status = $1 WHERE id = $2 RETURNING *', ['rejected', depositId]);
+        if (result.rows.length === 0) return res.status(404).json({ error: "ጥያቄው አልተገኘም" });
+        res.json({ message: "ጥያቄው ውድቅ ተደርጓል" });
+    } catch (err) {
+        res.status(500).json({ error: "ውድቅ ማድረግ አልተቻለም" });
+    }
+});
+
 app.post('/api/deposit-request', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: "Login required" });
