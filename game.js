@@ -72,7 +72,6 @@ function updateCountdown(seconds) {
     const timerEl = document.getElementById('selection-timer');
     const timerLargeEl = document.getElementById('selection-timer-large');
     const stakeTimerEl = document.getElementById('stake-selection-timer');
-    const legendTimerEl = document.querySelector('.timer-badge span');
     
     const timeStr = seconds === 'PLAYING' ? 'በጨዋታ ላይ' : seconds;
     const timeStrWithEmoji = seconds === 'PLAYING' ? '🎮 በጨዋታ ላይ' : `⏰ ${seconds}`;
@@ -80,8 +79,14 @@ function updateCountdown(seconds) {
     if (timerEl) timerEl.innerText = timeStrWithEmoji;
     if (timerLargeEl) timerLargeEl.innerText = timeStr;
     if (stakeTimerEl) stakeTimerEl.innerText = timeStrWithEmoji;
-    if (legendTimerEl) legendTimerEl.innerText = legendTimerEl.innerText; // Dummy to avoid error
-    if (legendTimerEl && seconds !== 'PLAYING') legendTimerEl.innerText = seconds;
+    
+    // Also update all stake rows timers
+    STAKES.forEach(amount => {
+        const rowTimer = document.getElementById(`stake-timer-${amount}`);
+        if (rowTimer && currentRoom == amount) {
+            rowTimer.innerText = timeStrWithEmoji;
+        }
+    });
 }
 
 // 100 static bingo cards
