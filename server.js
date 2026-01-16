@@ -210,10 +210,16 @@ app.post('/api/sms-webhook', async (req, res) => {
         if (linkMatch) {
             transactionCode = linkMatch[1];
         } else {
-            // 2. ካልተገኘ "ቁጥርዎ [CODE] ነዉ" የሚለውን መፈለግ
-            const codeMatch = message.match(/ቁጥርዎ\s+([A-Z0-9]{10,12})/);
+            // 2. ካልተገኘ "ቁጥርዎ [CODE] ነዉ" ወይም "ቁጥርዎ [CODE] ነዉ" (በሁለቱም የፊደል አይነቶች)
+            const codeMatch = message.match(/ቁጥርዎ\s+([A-Z0-9]{10,12})\s+ነዉ/);
             if (codeMatch) {
                 transactionCode = codeMatch[1];
+            } else {
+                // 3. በቀጥታ 10-12 ፊደላት/ቁጥሮች የያዘውን ኮድ መፈለግ (Fallback)
+                const genericMatch = message.match(/[A-Z0-9]{10,12}/);
+                if (genericMatch) {
+                    transactionCode = genericMatch[0];
+                }
             }
         }
 
