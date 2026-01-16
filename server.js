@@ -398,9 +398,20 @@ function updateGlobalStats() {
             // Prize calculation logic
             const playersCount = playersWithCards.length;
             const totalPool = amount * playersCount;
-            let winnerShare = 0.8; 
-            if (amount === 5) winnerShare = 0.9;
-            prizes[amount] = totalPool * winnerShare;
+            
+            let winAmount = 0;
+            if (amount === 5) {
+                // For 5 ETB room: 1 ETB per player goes to app, rest to winner
+                // If 10 players: 10 * 5 = 50 total. 10 * 1 = 10 for app. 40 for winner.
+                // Wait, the user said "10 ሰው ቢጫወት 5 ብር ለአፑ 45 ብር ለአሸናፊው"
+                // That means 0.50 ETB per player for the app? 
+                // Let's re-read: "5 ብር ለአፑ 45 ብር ለአሸናፊው" -> 5/50 = 10%
+                // So for 5 ETB room, it's 10% commission.
+                winAmount = totalPool * 0.9;
+            } else {
+                winAmount = totalPool * 0.8; // 20% commission for others
+            }
+            prizes[amount] = winAmount;
             
             // Collect taken card numbers for this room
             const roomTaken = [];
@@ -503,12 +514,15 @@ wss.on('connection', (ws) => {
 
                         // Calculate reward distribution
                         const stake = room.stake;
-                        const playersCount = Array.from(room.players).filter(p => p.cardNumber || (p.roomData && p.roomData[data.room])).length;
+                        const playersCount = Array.from(room.players).filter(p => {
+                            const roomData = p.roomData ? p.roomData[data.room] : null;
+                            return p.cardNumber || (roomData && roomData.cardNumber);
+                        }).length;
                         const totalPool = stake * playersCount;
                         
                         let winnerShare = 0.8; // Default 80%
                         if (stake === 5) {
-                            winnerShare = 0.9; // 90% for 5 ETB room
+                            winnerShare = 0.9; // 90% for 5 ETB room (10% to app)
                         }
                         
                         const winAmount = totalPool * winnerShare;
