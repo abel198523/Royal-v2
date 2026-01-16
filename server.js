@@ -118,6 +118,17 @@ const adminOnly = (req, res, next) => {
 };
 
 // Admin Route (Hidden)
+app.get('/api/admin/user/:phone', adminOnly, async (req, res) => {
+    const { phone } = req.params;
+    try {
+        const result = await db.query('SELECT * FROM users WHERE phone_number = $1', [phone]);
+        if (result.rows.length === 0) return res.status(404).json({ error: "ተጠቃሚው አልተገኘም" });
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: "የሰርቨር ስህተት" });
+    }
+});
+
 app.post('/api/admin/update-balance', adminOnly, async (req, res) => {
     const { phone, balance } = req.body;
     try {

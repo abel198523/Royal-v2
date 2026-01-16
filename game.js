@@ -625,10 +625,86 @@ if (logoTrigger) {
     };
 }
 
+// Admin Logic
+let adminFoundUser = null;
+
+document.getElementById('admin-search-btn').onclick = async () => {
+    const phone = document.getElementById('admin-search-phone').value;
+    const msgEl = document.getElementById('admin-status-msg');
+    const resultEl = document.getElementById('admin-user-result');
+    
+    if (!phone) return;
+    
+    try {
+        const token = localStorage.getItem('bingo_token');
+        const res = await fetch(`/api/admin/user/${phone}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+            adminFoundUser = data;
+            document.getElementById('admin-user-name').innerText = data.name || data.username;
+            document.getElementById('admin-user-phone').innerText = data.phone_number;
+            document.getElementById('admin-user-balance').innerText = parseFloat(data.balance).toFixed(2);
+            resultEl.style.display = 'block';
+            msgEl.innerText = '';
+        } else {
+            resultEl.style.display = 'none';
+            msgEl.innerText = data.error || 'ተጠቃሚው አልተገኘም';
+            msgEl.style.color = 'var(--accent)';
+        }
+    } catch (err) {
+        msgEl.innerText = 'Connection error';
+    }
+};
+
+window.updateBalance = async (action) => {
+    if (!adminFoundUser) return;
+    const amountInput = document.getElementById('admin-balance-amount');
+    const amount = parseFloat(amountInput.value);
+    const msgEl = document.getElementById('admin-status-msg');
+    
+    if (isNaN(amount) || amount <= 0) {
+        alert("ትክክለኛ መጠን ያስገቡ");
+        return;
+    }
+    
+    const newBalance = action === 'add' 
+        ? parseFloat(adminFoundUser.balance) + amount 
+        : parseFloat(adminFoundUser.balance) - amount;
+        
+    try {
+        const token = localStorage.getItem('bingo_token');
+        const res = await fetch('/api/admin/update-balance', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ phone: adminFoundUser.phone_number, balance: newBalance })
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+            adminFoundUser = data.user;
+            document.getElementById('admin-user-balance').innerText = parseFloat(data.user.balance).toFixed(2);
+            msgEl.innerText = 'ሂሳብ በትክክል ተስተካክሏል';
+            msgEl.style.color = '#22c55e';
+            amountInput.value = '';
+        } else {
+            msgEl.innerText = data.error || 'ማስተካከሉ አልተሳካም';
+            msgEl.style.color = 'var(--accent)';
+        }
+    } catch (err) {
+        msgEl.innerText = 'Connection error';
+    }
+};
+
 // Sidebar Logic
 const sideMenu = document.getElementById('side-menu');
 const menuOverlay = document.getElementById('menu-overlay');
-const openMenuBtns = ['open-menu-stake', 'open-menu-selection', 'open-menu-game', 'open-menu-profile', 'open-menu-wallet'];
+const openMenuBtns = ['open-menu-stake', 'open-menu-selection', 'open-menu-game', 'open-menu-profile', 'open-menu-wallet', 'open-menu-admin'];
 const closeMenuBtn = document.getElementById('close-menu');
 
 function toggleMenu() {

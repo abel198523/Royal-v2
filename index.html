@@ -156,6 +156,43 @@
                 </div>
             </div>
 
+            <!-- Admin Screen -->
+            <div id="admin-screen" class="admin-screen">
+                <div class="selection-header">
+                    <button id="open-menu-admin" class="menu-trigger">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                    <div class="selection-title">Admin Panel</div>
+                </div>
+                <div class="admin-content">
+                    <div class="admin-search-box">
+                        <input type="text" id="admin-search-phone" placeholder="Phone Number (e.g. 09...)">
+                        <button id="admin-search-btn" class="admin-btn">Search User</button>
+                    </div>
+                    
+                    <div id="admin-user-result" class="admin-user-card" style="display: none;">
+                        <div class="user-info">
+                            <h3 id="admin-user-name">User Name</h3>
+                            <p id="admin-user-phone">0900000000</p>
+                            <div class="current-balance">
+                                Current Balance: <span id="admin-user-balance">0.00</span> ETB
+                            </div>
+                        </div>
+                        
+                        <div class="balance-actions">
+                            <div class="input-group">
+                                <input type="number" id="admin-balance-amount" placeholder="Amount">
+                            </div>
+                            <div class="btn-group">
+                                <button onclick="updateBalance('add')" class="balance-btn add">+ Add</button>
+                                <button onclick="updateBalance('subtract')" class="balance-btn sub">- Subtract</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="admin-status-msg" class="admin-status"></div>
+                </div>
+            </div>
+
             <!-- Selection Screen -->
             <div id="selection-screen" class="selection-screen">
                 <div class="selection-header">
