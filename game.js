@@ -219,7 +219,7 @@ socket.onmessage = (event) => {
             roomTakenCards = data.takenCards[currentRoom];
             createAvailableCards();
         }
-        updateRoomStats(data.stats, data.timers);
+        updateRoomStats(data.stats, data.timers, data.prizes);
         if (currentRoom && data.timers[currentRoom] !== undefined) {
             updateCountdown(data.timers[currentRoom]);
         }
@@ -447,8 +447,8 @@ function createStakeList() {
             <div class="stake-amount">${amount} ETB</div>
             <div class="stake-info">
                 <div class="stake-players" id="stake-count-${amount}">0 Players</div>
-                <div class="stake-prize" id="stake-prize-${amount}" style="font-size: 0.85rem; color: #22c55e; font-weight: bold; display: none;">Prize: 0.00 ETB</div>
                 <div class="stake-timer" id="stake-timer-${amount}">⏰ 0:30</div>
+                <div class="stake-prize" id="stake-prize-${amount}" style="font-size: 0.85rem; color: #22c55e; font-weight: bold; display: none; margin-top: 4px;">Prize: 0.00 ETB</div>
             </div>
             <button class="join-btn" onclick="joinStake(${amount})">JOIN</button>
         `;
