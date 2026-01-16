@@ -329,10 +329,88 @@ function updateGlobalStats() {
     broadcastAll({ type: 'ROOM_STATS', stats, timers, takenCards });
 }
 
+function checkWin(cardData, drawnBalls) {
+    if (!cardData) return false;
+    const drawnSet = new Set(drawnBalls);
+    drawnSet.add('FREE');
+
+    const letters = ['B', 'I', 'N', 'G', 'O'];
+    const grid = letters.map(l => cardData[l]);
+
+    // Check Rows
+    for (let r = 0; r < 5; r++) {
+        let win = true;
+        for (let c = 0; c < 5; c++) {
+            if (!drawnSet.has(grid[c][r])) { win = false; break; }
+        }
+        if (win) return true;
+    }
+
+    // Check Columns
+    for (let c = 0; c < 5; c++) {
+        let win = true;
+        for (let r = 0; r < 5; r++) {
+            if (!drawnSet.has(grid[c][r])) { win = false; break; }
+        }
+        if (win) return true;
+    }
+
+    // Check Diagonals
+    let diag1 = true;
+    let diag2 = true;
+    for (let i = 0; i < 5; i++) {
+        if (!drawnSet.has(grid[i][i])) diag1 = false;
+        if (!drawnSet.has(grid[i][4 - i])) diag2 = false;
+    }
+    if (diag1 || diag2) return true;
+
+    // Check Corners
+    if (drawnSet.has(grid[0][0]) && drawnSet.has(grid[4][0]) && 
+        drawnSet.has(grid[0][4]) && drawnSet.has(grid[4][4])) return true;
+
+    return false;
+}
+
 wss.on('connection', (ws) => {
     ws.on('message', async (message) => {
         const data = JSON.parse(message);
         
+        if (data.type === 'BINGO_CLAIM') {
+            const room = rooms[data.room];
+            if (!room || !room.gameInterval) return;
+
+            // Find the player who claimed
+            let playerWs = null;
+            room.players.forEach(p => {
+                if (p.cardNumber === data.cardNumber) playerWs = p;
+            });
+
+            if (playerWs && playerWs.cardData) {
+                const isWin = checkWin(playerWs.cardData, room.drawnBalls);
+                if (isWin) {
+                    // Winner found! Stop the game and broadcast
+                    clearInterval(room.gameInterval);
+                    room.gameInterval = null;
+
+                    broadcastToRoom(data.room, {
+                        type: 'GAME_OVER',
+                        winner: playerWs.name || playerWs.username || 'ተጫዋች',
+                        message: `🎉 ቢንጎ! ${playerWs.name || playerWs.username} አሸንፏል!`
+                    });
+
+                    // Reset for next game
+                    room.players.forEach(p => {
+                        p.cardNumber = null;
+                        p.cardData = null;
+                    });
+                    
+                    updateGlobalStats();
+                    setTimeout(() => startRoomCountdown(data.room), 5000);
+                } else {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'ቢንጎ ገና አልሞላም!' }));
+                }
+            }
+        }
         if (data.type === 'JOIN_ROOM') {
             // Remove from old room if any
             if (ws.room && rooms[ws.room]) {

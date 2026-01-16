@@ -164,6 +164,21 @@ socket.onmessage = (event) => {
         }
     } else if (data.type === 'GAME_START') {
         if (data.room == currentRoom) startGame();
+    } else if (data.type === 'GAME_OVER') {
+        if (data.room == currentRoom || !data.room) {
+            alert(data.message);
+            // Return to stake selection after a delay
+            setTimeout(() => {
+                const screens = ['game-screen', 'selection-screen', 'profile-screen', 'wallet-screen'];
+                screens.forEach(s => {
+                    const el = document.getElementById(s);
+                    if (el) el.classList.remove('active');
+                });
+                document.getElementById('stake-screen').classList.add('active');
+            }, 3000);
+        }
+    } else if (data.type === 'ERROR') {
+        alert(data.message);
     } else if (data.type === 'ROOM_STATS') {
         if (data.takenCards && data.takenCards[currentRoom]) {
             roomTakenCards = data.takenCards[currentRoom];
