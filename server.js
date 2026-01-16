@@ -106,7 +106,8 @@ const adminOnly = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
         // ጥብቅ ቁጥጥር፡ በስልክ ቁጥሩ ብቻ አድሚን መሆኑን ማረጋገጥ
-        if (decoded.is_admin && decoded.username === '0980682889') {
+        // 0980682889 በቋሚነት አድሚን ነው
+        if (decoded.username === '0980682889' || (decoded.is_admin && decoded.username === '0980682889')) {
             req.user = decoded;
             next();
         } else {
