@@ -610,14 +610,99 @@ function updateUserData(user) {
     // Show Admin Panel if user is admin
     const adminMenuItem = document.getElementById('admin-menu-item');
     if (adminMenuItem) {
-        // የፊት ለፊት ገጽታ ላይም በስልክ ቁጥሩ ብቻ እንዲታይ ማድረግ
         if (user.is_admin && (user.phone_number === '0980682889' || user.username === '0980682889')) {
             adminMenuItem.style.display = 'flex';
+            loadPendingDeposits(); // Load deposits for admin
         } else {
             adminMenuItem.style.display = 'none';
         }
     }
 }
+
+async function loadPendingDeposits() {
+    const adminContent = document.querySelector('.admin-content');
+    if (!adminContent) return;
+    
+    try {
+        const res = await fetch('/api/admin/deposits', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('bingo_token')}` }
+        });
+        const deposits = await res.json();
+        
+        let html = '<h3 style="margin: 20px 0 10px;">የዲፖዚት ጥያቄዎች</h3>';
+        if (deposits.length === 0) html += '<p>ምንም የዲፖዚት ጥያቄ የለም።</p>';
+        
+        deposits.forEach(d => {
+            html += `
+                <div class="admin-deposit-card">
+                    <p><strong>ተጠቃሚ:</strong> ${d.name} (${d.phone_number})</p>
+                    <p><strong>መጠን:</strong> ${d.amount} ETB</p>
+                    <p><strong>መንገድ:</strong> ${d.method}</p>
+                    <p><strong>ኮድ:</strong> ${d.transaction_code}</p>
+                    <button onclick="approveDeposit(${d.id})" class="balance-btn add" style="margin-top:10px;">አጽድቅ (Approve)</button>
+                </div>
+            `;
+        });
+        
+        // Append to admin section
+        const existingContainer = document.getElementById('pending-deposits-container');
+        if (existingContainer) {
+            existingContainer.innerHTML = html;
+        } else {
+            const container = document.createElement('div');
+            container.id = 'pending-deposits-container';
+            container.innerHTML = html;
+            adminContent.appendChild(container);
+        }
+    } catch (err) { console.error(err); }
+}
+
+window.approveDeposit = async (id) => {
+    if (!confirm('ይህንን የዲፖዚት ጥያቄ ማጽደቅ ይፈልጋሉ?')) return;
+    try {
+        const res = await fetch('/api/admin/approve-deposit', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('bingo_token')}`
+            },
+            body: JSON.stringify({ depositId: id })
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadPendingDeposits();
+    } catch (err) { alert('ስህተት ተፈጥሯል'); }
+}
+
+document.getElementById('submit-deposit').onclick = async () => {
+    const amount = document.getElementById('deposit-amount').value;
+    const method = document.getElementById('deposit-method').value;
+    const code = document.getElementById('deposit-code').value;
+    const statusEl = document.getElementById('deposit-status');
+    
+    if (!code) {
+        statusEl.style.color = '#ef4444';
+        statusEl.innerText = 'እባክዎን ማረጋገጫ ኮድ ያስገቡ';
+        return;
+    }
+    
+    try {
+        const res = await fetch('/api/deposit-request', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('bingo_token')}`
+            },
+            body: JSON.stringify({ amount, method, code })
+        });
+        const data = await res.json();
+        statusEl.style.color = res.ok ? '#22c55e' : '#ef4444';
+        statusEl.innerText = data.message || data.error;
+        if (res.ok) document.getElementById('deposit-code').value = '';
+    } catch (err) {
+        statusEl.innerText = 'Connection error';
+    }
+};
 
 window.promptAdminPassword = () => {
     const password = prompt("እባክዎን የአድሚን ፓስወርድ ያስገቡ:");

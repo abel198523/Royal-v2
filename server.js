@@ -130,6 +130,60 @@ app.get('/api/admin/user/:phone', adminOnly, async (req, res) => {
     }
 });
 
+app.get('/api/admin/deposits', adminOnly, async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT dr.*, u.phone_number, u.name 
+            FROM deposit_requests dr 
+            JOIN users u ON dr.user_id = u.id 
+            WHERE dr.status = 'pending' 
+            ORDER BY dr.created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: "መረጃውን ማምጣት አልተቻለም" });
+    }
+});
+
+app.post('/api/admin/approve-deposit', adminOnly, async (req, res) => {
+    const { depositId } = req.body;
+    try {
+        await db.query('BEGIN');
+        const deposit = await db.query('SELECT * FROM deposit_requests WHERE id = $1', [depositId]);
+        if (deposit.rows.length === 0) throw new Error("ጥያቄው አልተገኘም");
+        
+        const { user_id, amount } = deposit.rows[0];
+        
+        await db.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [amount, user_id]);
+        await db.query('UPDATE deposit_requests SET status = $1 WHERE id = $2', ['approved', depositId]);
+        
+        await db.query('COMMIT');
+        res.json({ message: "ዲፖዚቱ በትክክል ተፈቅዷል" });
+    } catch (err) {
+        await db.query('ROLLBACK');
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/deposit-request', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Login required" });
+    
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const { amount, method, code } = req.body;
+        
+        await db.query(
+            'INSERT INTO deposit_requests (user_id, amount, method, transaction_code) VALUES ($1, $2, $3, $4)',
+            [decoded.id, amount, method, code]
+        );
+        
+        res.json({ message: "የዲፖዚት ጥያቄዎ ለአድሚን ተልኳል። እባክዎን ጥቂት ደቂቃዎችን ይጠብቁ።" });
+    } catch (err) {
+        res.status(500).json({ error: "ጥያቄውን መላክ አልተቻለም" });
+    }
+});
+
 app.post('/api/admin/update-balance', adminOnly, async (req, res) => {
     const { phone, balance } = req.body;
     try {

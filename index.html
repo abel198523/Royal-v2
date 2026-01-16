@@ -149,9 +149,34 @@
                             <span id="wallet-balance-value" class="wallet-balance">0.00</span>
                         </div>
                     </div>
-                    <div class="wallet-actions">
-                        <button class="wallet-btn deposit" onclick="navTo('deposit')">Deposit</button>
-                        <button class="wallet-btn withdraw" onclick="navTo('withdraw')">Withdraw</button>
+                    
+                    <!-- Deposit Form -->
+                    <div class="deposit-section">
+                        <h3 style="margin-bottom: 15px; font-size: 1.1rem;">Deposit Money</h3>
+                        <div class="input-group">
+                            <label>Amount (መጠን)</label>
+                            <select id="deposit-amount" class="form-input">
+                                <option value="50">50 ETB</option>
+                                <option value="100">100 ETB</option>
+                                <option value="200">200 ETB</option>
+                                <option value="500">500 ETB</option>
+                                <option value="1000">1000 ETB</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Method (መንገድ)</label>
+                            <select id="deposit-method" class="form-input">
+                                <option value="CBE">CBE (የኢትዮጵያ ንግድ ባንክ)</option>
+                                <option value="Telebirr">Telebirr (ቴሌብር)</option>
+                                <option value="BOA">Abyssinia (አቢሲኒያ)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Transaction Code (ማረጋገጫ ኮድ)</label>
+                            <input type="text" id="deposit-code" class="form-input" placeholder="Enter Transaction ID">
+                        </div>
+                        <button id="submit-deposit" class="wallet-btn deposit" style="width: 100%; margin-top: 10px;">Submit Request</button>
+                        <div id="deposit-status" style="margin-top: 10px; text-align: center; font-size: 0.9rem;"></div>
                     </div>
                 </div>
             </div>

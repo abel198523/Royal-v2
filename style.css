@@ -243,7 +243,54 @@ body {
 }
 
 .profile-content, .wallet-content {
-    padding: 20px 0;
+    padding: 10px 0;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.deposit-section {
+    background: #1e2533;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #374151;
+    margin-top: 15px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px;
+    background: #111827;
+    border: 1px solid #374151;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.admin-deposit-card {
+    background: #1e2533;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #374151;
+    text-align: left;
+}
+
+.admin-deposit-card p {
+    margin: 5px 0;
+    font-size: 0.9rem;
 }
 
 .profile-info-card {
