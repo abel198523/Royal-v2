@@ -512,6 +512,122 @@ function initApp() {
 
 // Authentication Logic
 let userBalance = 0;
+// Admin Panel Logic
+window.switchAdminTab = (tabName) => {
+    document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`admin-${tabName}-tab`).classList.add('active');
+    event.target.classList.add('active');
+    if (tabName === 'deposits') loadPendingDeposits();
+};
+
+async function loadPendingDeposits() {
+    const listEl = document.getElementById('admin-deposits-list');
+    const token = localStorage.getItem('bingo_token');
+    try {
+        const res = await fetch('/api/admin/deposits', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const deposits = await res.json();
+        if (deposits.length === 0) {
+            listEl.innerHTML = '<p class="empty-msg">No pending deposit requests.</p>';
+            return;
+        }
+        listEl.innerHTML = deposits.map(d => `
+            <div class="deposit-request-card">
+                <div class="deposit-info">
+                    <p><strong>User:</strong> ${d.name || d.phone_number}</p>
+                    <p><strong>Phone:</strong> ${d.phone_number}</p>
+                    <p><strong>Amount:</strong> ${d.amount} ETB</p>
+                    <p><strong>Method:</strong> ${d.method}</p>
+                    <p><strong>Code:</strong> ${d.transaction_code}</p>
+                </div>
+                <div class="deposit-actions">
+                    <button class="approve-btn" onclick="handleDeposit('${d.id}', 'approve')">Approve</button>
+                    <button class="reject-btn" onclick="handleDeposit('${d.id}', 'reject')">Reject</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) { console.error(e); }
+}
+
+window.handleDeposit = async (id, action) => {
+    const token = localStorage.getItem('bingo_token');
+    const endpoint = action === 'approve' ? '/api/admin/approve-deposit' : '/api/admin/reject-deposit';
+    try {
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ depositId: id })
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadPendingDeposits();
+    } catch (e) { console.error(e); }
+};
+
+let searchedUser = null;
+const searchBtn = document.getElementById('admin-search-btn');
+if (searchBtn) {
+    searchBtn.onclick = async () => {
+        const phone = document.getElementById('admin-search-phone').value;
+        const token = localStorage.getItem('bingo_token');
+        try {
+            const res = await fetch(`/api/admin/user/${phone}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                searchedUser = data;
+                document.getElementById('admin-user-name').innerText = data.name || data.username;
+                document.getElementById('admin-user-phone').innerText = data.phone_number;
+                document.getElementById('admin-user-balance').innerText = parseFloat(data.balance).toFixed(2);
+                document.getElementById('admin-user-result').style.display = 'block';
+            } else {
+                alert(data.error);
+            }
+        } catch (e) { console.error(e); }
+    };
+}
+
+const updateBalance = async (type) => {
+    if (!searchedUser) return;
+    const amount = parseFloat(document.getElementById('admin-balance-amount').value);
+    if (isNaN(amount) || amount <= 0) return alert("Amount must be positive");
+    
+    let newBalance = parseFloat(searchedUser.balance);
+    if (type === 'add') newBalance += amount;
+    else newBalance -= amount;
+
+    const token = localStorage.getItem('bingo_token');
+    try {
+        const res = await fetch('/api/admin/update-balance', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ phone: searchedUser.phone_number, balance: newBalance })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            searchedUser.balance = newBalance;
+            document.getElementById('admin-user-balance').innerText = newBalance.toFixed(2);
+            alert(data.message);
+        } else {
+            alert(data.error);
+        }
+    } catch (e) { console.error(e); }
+};
+
+const addBalBtn = document.getElementById('admin-add-balance');
+const subBalBtn = document.getElementById('admin-sub-balance');
+if (addBalBtn) addBalBtn.onclick = () => updateBalance('add');
+if (subBalBtn) subBalBtn.onclick = () => updateBalance('subtract');
+
 function promptAdminPassword() {
     const pass = prompt("አድሚን ፓስወርድ ያስገቡ:");
     if (pass === "fidel123") { // Default admin password

@@ -190,30 +190,44 @@
                     <div class="selection-title">Admin Panel</div>
                 </div>
                 <div class="admin-content">
-                    <div class="admin-search-box">
-                        <input type="text" id="admin-search-phone" placeholder="Phone Number (e.g. 09...)">
-                        <button id="admin-search-btn" class="admin-btn">Search User</button>
+                    <div class="admin-tabs">
+                        <button class="tab-btn active" onclick="switchAdminTab('users')">Users</button>
+                        <button class="tab-btn" onclick="switchAdminTab('deposits')">Deposits</button>
                     </div>
-                    
-                    <div id="admin-user-result" class="admin-user-card" style="display: none;">
-                        <div class="user-info">
-                            <h3 id="admin-user-name">User Name</h3>
-                            <p id="admin-user-phone">0900000000</p>
-                            <div class="current-balance">
-                                Current Balance: <span id="admin-user-balance">0.00</span> ETB
-                            </div>
+
+                    <div id="admin-users-tab" class="admin-tab-content active">
+                        <div class="admin-search-box">
+                            <input type="text" id="admin-search-phone" placeholder="Phone Number (e.g. 09...)">
+                            <button id="admin-search-btn" class="admin-btn">Search User</button>
                         </div>
                         
-                        <div class="balance-actions">
-                            <div class="input-group">
-                                <input type="number" id="admin-balance-amount" placeholder="Amount">
+                        <div id="admin-user-result" class="admin-user-card" style="display: none;">
+                            <div class="user-info">
+                                <h3 id="admin-user-name">User Name</h3>
+                                <p id="admin-user-phone">0900000000</p>
+                                <div class="current-balance">
+                                    Current Balance: <span id="admin-user-balance">0.00</span> ETB
+                                </div>
                             </div>
-                            <div class="btn-group">
-                                <button onclick="updateBalance('add')" class="balance-btn add">+ Add</button>
-                                <button onclick="updateBalance('subtract')" class="balance-btn sub">- Subtract</button>
+                            
+                            <div class="balance-actions">
+                                <div class="input-group">
+                                    <input type="number" id="admin-balance-amount" placeholder="Amount">
+                                </div>
+                                <div class="btn-group">
+                                    <button id="admin-add-balance" class="balance-btn add">+ Add</button>
+                                    <button id="admin-sub-balance" class="balance-btn sub">- Subtract</button>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <div id="admin-deposits-tab" class="admin-tab-content">
+                        <div id="admin-deposits-list" class="deposits-list">
+                            <p class="empty-msg">No pending deposit requests.</p>
+                        </div>
+                    </div>
+
                     <div id="admin-status-msg" class="admin-status"></div>
                 </div>
             </div>
