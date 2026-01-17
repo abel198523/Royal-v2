@@ -86,7 +86,7 @@ app.post('/api/signup-verify', async (req, res) => {
         res.json({ token, username: user.username, balance: user.balance, name: user.name, player_id: user.player_id, is_admin: user.is_admin });
     } catch (err) {
         console.error('Signup Verify Error:', err);
-        res.status(500).json({ error: "ምዝገባው አልተሳካም: " + err.message });
+        res.status(500).json({ error: "ምዝገባው አልተሳካም" });
     }
 });
 

@@ -17,7 +17,6 @@ const colors = {
 
 function createBingoNumbers() {
     bingoBoard.innerHTML = '';
-    // Create columns B(1-15), I(16-30), N(31-45), G(46-60), O(61-75)
     for (let row = 0; row < 15; row++) {
         for (let col = 0; col < 5; col++) {
             const num = (col * 15) + row + 1;
@@ -32,7 +31,7 @@ function createBingoNumbers() {
 
 let currentRoom = null;
 let roomTakenCards = [];
-let roomStates = {}; // Isolate state per room
+let roomStates = {};
 
 function getRoomState(roomId) {
     if (!roomStates[roomId]) {
@@ -55,7 +54,6 @@ function updateRoomStats(stats, roomTimers, prizes) {
             countEl.style.color = stats[amount] > 0 ? '#3b82f6' : '#6b7280';
         }
         
-        // Show Prize amount
         const prizeEl = document.getElementById(`stake-prize-${amount}`);
         if (prizeEl && prizes && prizes[amount] !== undefined) {
             prizeEl.innerText = `Prize: ${prizes[amount].toFixed(2)} ETB`;
@@ -91,17 +89,19 @@ function updateCountdown(seconds) {
     if (timerLargeEl) timerLargeEl.innerText = timeStr;
     if (stakeTimerEl) stakeTimerEl.innerText = timeStrWithEmoji;
     
-    // Also update all stake rows timers
-    STAKES.forEach(amount => {
-        const rowTimer = document.getElementById(`stake-timer-${amount}`);
-        if (rowTimer && currentRoom == amount) {
-            rowTimer.innerText = timeStrWithEmoji;
-        }
-    });
+    if (typeof STAKES !== 'undefined') {
+        STAKES.forEach(amount => {
+            const rowTimer = document.getElementById(`stake-timer-${amount}`);
+            if (rowTimer && currentRoom == amount) {
+                rowTimer.innerText = timeStrWithEmoji;
+            }
+        });
+    }
 }
 
-// 100 static bingo cards
-const staticCards = [{"id":1,"data":{"B":[7,10,13,14,15],"I":[18,21,23,29,30],"N":[35,36,"FREE",40,43],"G":[46,47,48,49,56],"O":[65,67,69,70,75]}},{"id":2,"data":{"B":[2,7,11,14,15],"I":[16,18,20,21,25],"N":[31,32,"FREE",39,43],"G":[50,53,56,58,60],"O":[63,66,72,73,74]}},{"id":3,"data":{"B":[2,4,12,13,14],"I":[16,22,24,29,30],"N":[32,33,"FREE",44,45],"G":[47,52,56,59,60],"O":[61,62,64,66,68]}},{"id":4,"data":{"B":[3,6,7,10,13],"I":[16,21,24,26,30],"N":[32,33,"FREE",36,41],"G":[46,48,52,54,59],"O":[63,65,66,72,75]}},{"id":5,"data":{"B":[1,4,7,12,15],"I":[17,19,26,29,30],"N":[31,32,"FREE",36,37],"G":[46,51,52,54,58],"O":[64,68,71,73,74]}},{"id":6,"data":{"B":[3,4,5,6,10],"I":[18,20,25,26,27],"N":[32,34,"FREE",41,45],"G":[48,50,51,53,54],"O":[62,63,65,67,75]}},{"id":7,"data":{"B":[1,2,4,5,6],"I":[17,21,24,27,30],"N":[31,33,"FREE",42,45],"G":[48,49,50,56,57],"O":[67,68,71,73,74]}},{"id":8,"data":{"B":[1,6,7,9,12],"I":[17,19,21,27,28],"N":[31,40,"FREE",42,43],"G":[47,49,50,51,57],"O":[64,65,66,70,74]}},{"id":9,"data":{"B":[3,6,9,12,14],"I":[16,17,20,22,27],"N":[31,37,"FREE",39,40],"G":[49,54,55,57,59],"O":[63,67,69,70,74]}},{"id":10,"data":{"B":[1,5,9,10,15],"I":[23,24,27,29,30],"N":[35,39,"FREE",43,45],"G":[47,52,56,58,59],"O":[62,63,64,67,71]}},{"id":11,"data":{"B":[1,2,6,12,14],"I":[16,18,21,28,30],"N":[31,37,"FREE",41,45],"G":[46,52,54,55,56],"O":[63,68,71,72,73]}},{"id":12,"data":{"B":[1,6,7,12,14],"I":[16,17,18,21,29],"N":[31,33,"FREE",43,45],"G":[46,54,55,56,59],"O":[62,63,65,69,70]}},{"id":13,"data":{"B":[1,6,8,11,15],"I":[16,19,20,22,30],"N":[35,38,"FREE",41,42],"G":[48,51,53,56,58],"O":[68,69,70,73,75]}},{"id":14,"data":{"B":[2,9,11,14,15],"I":[16,21,22,25,29],"N":[35,38,"FREE",41,45],"G":[46,51,52,54,57],"O":[66,67,69,72,75]}},{"id":15,"data":{"B":[5,7,11,12,14],"I":[18,19,22,25,26],"N":[33,41,"FREE",44,45],"G":[46,51,53,54,55],"O":[63,67,70,73,74]}},{"id":16,"data":{"B":[1,7,8,14,15],"I":[17,19,25,27,30],"N":[32,37,"FREE",42,44],"G":[50,52,55,56,58],"O":[61,62,64,65,74]}}];
+const STAKES = [5, 10, 20, 30, 40, 50, 100, 200, 500];
+
+const staticCards = [{"id":1,"data":{"B":[7,10,13,14,15],"I":[18,21,23,29,30],"N":[35,36,"FREE",40,43],"G":[46,47,48,49,56],"O":[65,67,69,70,75]}},{"id":2,"data":{"B":[2,7,11,14,15],"I":[16,18,20,21,25],"N":[31,32,"FREE",39,43],"G":[50,53,56,58,60],"O":[63,66,72,73,74]}},{"id":3,"data":{"B":[2,4,12,13,14],"I":[16,22,24,29,30],"N":[32,33,"FREE",44,45],"G":[47,52,56,59,60],"O":[61,62,64,66,68]}},{"id":4,"data":{"B":[3,6,7,10,13],"I":[16,21,24,26,30],"N":[32,33,"FREE",36,41],"G":[46,48,52,54,59],"O":[63,65,66,72,75]}},{"id":5,"data":{"B":[1,4,7,12,15],"I":[17,19,26,29,30],"N":[31,32,"FREE",36,37],"G":[46,51,52,54,58],"O":[64,68,71,73,74]}},{"id":6,"data":{"B":[3,4,5,6,10],"I":[18,20,25,26,27],"N":[32,34,"FREE",41,45],"G":[48,50,51,53,54],"O":[62,63,65,67,75]}},{"id":7,"data":{"B":[1,2,4,5,6],"I":[17,21,24,27,30],"N":[31,33,"FREE",42,45],"G":[48,49,50,56,57],"O":[67,68,71,73,74]}},{"id":8,"data":{"B":[1,6,7,9,12],"I":[17,19,21,27,28],"N":[31,40,"FREE",42,43],"G":[47,49,50,51,57],"O":[64,65,66,70,74]}},{"id":9,"data":{"B":[3,6,9,12,14],"I":[16,17,20,22,27],"N":[31,37,"FREE",39,40],"G":[49,54,55,57,59],"O":[63,67,69,70,74]}},{"id":10,"data":{"B":[1,5,9,10,15],"I":[23,24,27,29,30],"N":[35,39,"FREE",43,45],"G":[47,52,56,58,59],"O":[62,63,64,67,71]}},{"id":11,"data":{"B":[1,2,6,12,14],"I":[16,18,21,28,30],"N":[31,37,"FREE",41,45],"G":[46,52,54,55,56],"O":[63,68,71,72,73]}},{"id":12,"data":{"B":[1,6,7,12,14],"I":[16,17,18,21,29],"N":[31,33,"FREE",43,45],"G":[46,54,55,56,59],"O":[62,63,65,69,70]}},{"id":13,"data":{"B":[1,6,8,11,15],"I":[16,19,20,22,30],"N":[35,38,"FREE",41,42],"G":[48,51,53,56,58],"O":[68,69,70,73,75]}},{"id":14,"data":{"B":[2,9,11,14,15],"I":[16,21,22,25,29],"N":[35,38,"FREE",41,45],"G":[46,51,52,54,57],"O":[66,67,69,72,75]}},{"id":15,"data":{"B":[5,7,11,12,14],"I":[18,19,22,25,26],"N":[33,41,"FREE",44,45],"G":[46,51,53,54,55],"O":[63,67,70,73,74]}},{"id":16,"data":{"B":[1,7,8,14,15],"I":[17,19,25,27,30],"N":[32,37,"FREE",42,44],"G":[50,52,55,56,58],"O":[61,62,65,69,70]}];
 
 function getCardById(id) {
     const found = staticCards.find(c => c.id === id);
@@ -434,8 +434,6 @@ confirmCard.onclick = () => {
     previewOverlay.classList.remove('active');
 };
 
-const STAKES = [5, 10, 20, 30, 40, 50, 100, 200, 500];
-
 function createStakeList() {
     const list = document.getElementById('stake-list');
     if (!list) return;
@@ -478,7 +476,6 @@ function initApp() {
     createStakeList();
     createAvailableCards();
 
-    // Sidebar triggers
     const menuTriggers = document.querySelectorAll('.menu-trigger');
     const sideMenu = document.getElementById('side-menu');
     const overlay = document.getElementById('menu-overlay');
@@ -527,278 +524,21 @@ function initApp() {
     }
 }
 
-// Authentication Logic
 let userBalance = 0;
-// Admin Panel Logic
-// Withdraw Logic
-const submitWithdraw = document.getElementById('submit-withdraw');
-if (submitWithdraw) {
-    submitWithdraw.onclick = async () => {
-        const amount = parseFloat(document.getElementById('withdraw-amount').value);
-        const method = document.getElementById('withdraw-method').value;
-        const account = document.getElementById('withdraw-account').value;
-        const statusEl = document.getElementById('withdraw-status');
-        const token = localStorage.getItem('bingo_token');
-
-        if (isNaN(amount) || amount < 50) return alert("Minimum withdrawal is 50 ETB");
-        if (!account) return alert("Please enter account details");
-
-        try {
-            const res = await fetch('/api/withdraw-request', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ amount, method, account })
-            });
-            const data = await res.json();
-            statusEl.innerText = data.message || data.error;
-            if (res.ok) {
-                // Balance update will come via WS if needed, but let's refresh UI locally for better UX
-                userBalance -= amount;
-                updateBalanceDisplay();
-            }
-        } catch (e) { console.error(e); }
-    };
-}
-
-function updateBalanceDisplay() {
-    const val = userBalance.toFixed(2);
-    const els = ['sel-balance', 'wallet-balance-value', 'withdraw-balance-value', 'admin-user-balance'];
-    els.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = val;
-    });
-}
-
-// Update Admin Panel Logic to include Withdrawals tab
-window.switchAdminTab = (tabName) => {
-    document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    
-    const tabEl = document.getElementById(`admin-${tabName}-tab`);
-    if (tabEl) tabEl.classList.add('active');
-    
-    // Find the button and add active class
-    const buttons = document.querySelectorAll('.tab-btn');
-    buttons.forEach(btn => {
-        if (btn.getAttribute('onclick') === `switchAdminTab('${tabName}')`) {
-            btn.classList.add('active');
-        }
-    });
-    
-    if (tabName === 'deposits') loadPendingDeposits();
-    if (tabName === 'withdrawals') loadPendingWithdrawals();
-};
-
-const broadcastBtn = document.getElementById('send-broadcast');
-if (broadcastBtn) {
-    broadcastBtn.onclick = async () => {
-        const message = document.getElementById('broadcast-message').value;
-        const token = localStorage.getItem('bingo_token');
-
-        if (!message) return alert("እባክዎ መልዕክት ያስገቡ");
-        if (!confirm("ይህ መልዕክት ለሁሉም ተጠቃሚዎች ይላካል። እርግጠኛ ነዎት?")) return;
-
-        broadcastBtn.disabled = true;
-        broadcastBtn.innerText = "Sending...";
-        
-        try {
-            const res = await fetch('/api/admin/broadcast', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ message })
-            });
-            const data = await res.json();
-            alert(data.message || data.error);
-            if (res.ok) document.getElementById('broadcast-message').value = '';
-        } catch (e) { 
-            console.error(e);
-            alert("የግንኙነት ስህተት");
-        } finally {
-            broadcastBtn.disabled = false;
-            broadcastBtn.innerText = "Send Broadcast";
-        }
-    };
-}
-
-async function loadPendingWithdrawals() {
-    const listEl = document.getElementById('admin-withdrawals-list');
-    const token = localStorage.getItem('bingo_token');
-    try {
-        const res = await fetch('/api/admin/withdrawals', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const withdrawals = await res.json();
-        if (withdrawals.length === 0) {
-            listEl.innerHTML = '<p class="empty-msg">No pending withdrawal requests.</p>';
-            return;
-        }
-        listEl.innerHTML = withdrawals.map(w => `
-            <div class="deposit-request-card">
-                <div class="deposit-info">
-                    <p><strong>User:</strong> ${w.name || w.phone_number}</p>
-                    <p><strong>Phone:</strong> ${w.phone_number}</p>
-                    <p><strong>Amount:</strong> ${w.amount} ETB</p>
-                    <p><strong>Method:</strong> ${w.method}</p>
-                    <p><strong>Account:</strong> ${w.account_details}</p>
-                </div>
-                <div class="deposit-actions">
-                    <button class="approve-btn" onclick="handleWithdraw('${w.id}', 'approve')">Approve</button>
-                    <button class="reject-btn" onclick="handleWithdraw('${w.id}', 'reject')">Reject</button>
-                </div>
-            </div>
-        `).join('');
-    } catch (e) { console.error(e); }
-}
-
-window.handleWithdraw = async (id, action) => {
-    const token = localStorage.getItem('bingo_token');
-    try {
-        const res = await fetch('/api/admin/handle-withdraw', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ withdrawId: id, action })
-        });
-        const data = await res.json();
-        alert(data.message || data.error);
-        loadPendingWithdrawals();
-    } catch (e) { console.error(e); }
-};
-
-async function loadPendingDeposits() {
-    const listEl = document.getElementById('admin-deposits-list');
-    const token = localStorage.getItem('bingo_token');
-    try {
-        const res = await fetch('/api/admin/deposits', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const deposits = await res.json();
-        if (deposits.length === 0) {
-            listEl.innerHTML = '<p class="empty-msg">No pending deposit requests.</p>';
-            return;
-        }
-        listEl.innerHTML = deposits.map(d => `
-            <div class="deposit-request-card">
-                <div class="deposit-info">
-                    <p><strong>User:</strong> ${d.name || d.phone_number}</p>
-                    <p><strong>Phone:</strong> ${d.phone_number}</p>
-                    <p><strong>Amount:</strong> ${d.amount} ETB</p>
-                    <p><strong>Method:</strong> ${d.method}</p>
-                    <p><strong>Code:</strong> ${d.transaction_code}</p>
-                </div>
-                <div class="deposit-actions">
-                    <button class="approve-btn" onclick="handleDeposit('${d.id}', 'approve')">Approve</button>
-                    <button class="reject-btn" onclick="handleDeposit('${d.id}', 'reject')">Reject</button>
-                </div>
-            </div>
-        `).join('');
-    } catch (e) { console.error(e); }
-}
-
-window.handleDeposit = async (id, action) => {
-    const token = localStorage.getItem('bingo_token');
-    const endpoint = action === 'approve' ? '/api/admin/approve-deposit' : '/api/admin/reject-deposit';
-    try {
-        const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ depositId: id })
-        });
-        const data = await res.json();
-        alert(data.message || data.error);
-        loadPendingDeposits();
-    } catch (e) { console.error(e); }
-};
-
-let searchedUser = null;
-const searchBtn = document.getElementById('admin-search-btn');
-if (searchBtn) {
-    searchBtn.onclick = async () => {
-        const phone = document.getElementById('admin-search-phone').value;
-        const token = localStorage.getItem('bingo_token');
-        try {
-            const res = await fetch(`/api/admin/user/${phone}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (res.ok) {
-                searchedUser = data;
-                document.getElementById('admin-user-name').innerText = data.name || data.username;
-                document.getElementById('admin-user-phone').innerText = data.phone_number;
-                document.getElementById('admin-user-balance').innerText = parseFloat(data.balance).toFixed(2);
-                document.getElementById('admin-user-result').style.display = 'block';
-            } else {
-                alert(data.error);
-            }
-        } catch (e) { console.error(e); }
-    };
-}
-
-const updateBalance = async (type) => {
-    if (!searchedUser) return;
-    const amount = parseFloat(document.getElementById('admin-balance-amount').value);
-    if (isNaN(amount) || amount <= 0) return alert("Amount must be positive");
-    
-    let newBalance = parseFloat(searchedUser.balance);
-    if (type === 'add') newBalance += amount;
-    else newBalance -= amount;
-
-    const token = localStorage.getItem('bingo_token');
-    try {
-        const res = await fetch('/api/admin/update-balance', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ phone: searchedUser.phone_number, balance: newBalance })
-        });
-        const data = await res.json();
-        if (res.ok) {
-            searchedUser.balance = newBalance;
-            document.getElementById('admin-user-balance').innerText = newBalance.toFixed(2);
-            alert(data.message);
-        } else {
-            alert(data.error);
-        }
-    } catch (e) { console.error(e); }
-};
-
-const addBalBtn = document.getElementById('admin-add-balance');
-const subBalBtn = document.getElementById('admin-sub-balance');
-if (addBalBtn) addBalBtn.onclick = () => updateBalance('add');
-if (subBalBtn) subBalBtn.onclick = () => updateBalance('subtract');
-
-function promptAdminPassword() {
-    const pass = prompt("አድሚን ፓስወርድ ያስገቡ:");
-    if (pass === "fidel123") { // Default admin password
-        navTo('admin');
-    } else {
-        alert("የተሳሳተ ፓስወርድ!");
-    }
-}
-
-window.promptAdminPassword = promptAdminPassword;
 
 function updateUserData(data) {
     userBalance = parseFloat(data.balance);
-    const balanceEl = document.getElementById('user-balance');
-    const walletBalanceEl = document.getElementById('wallet-balance');
-    const profilePhoneEl = document.getElementById('profile-phone');
-    if(balanceEl) balanceEl.innerText = userBalance;
+    const balanceEl = document.getElementById('sel-balance');
+    const walletBalanceEl = document.getElementById('wallet-balance-value');
+    const profilePhoneEl = document.getElementById('profile-phone-number');
+    const profileUserTop = document.getElementById('profile-username-top');
+    const stakeUserTop = document.getElementById('stake-username');
+    
+    if(balanceEl) balanceEl.innerText = userBalance.toFixed(2);
     if(walletBalanceEl) walletBalanceEl.innerText = userBalance.toFixed(2);
     if(profilePhoneEl) profilePhoneEl.innerText = data.phone_number || data.username;
+    if(profileUserTop) profileUserTop.innerText = data.name || data.username;
+    if(stakeUserTop) stakeUserTop.innerText = data.name || data.username;
 }
 
 function navTo(screenId) {
@@ -809,11 +549,8 @@ function navTo(screenId) {
     });
     
     const target = document.getElementById(`${screenId}-screen`);
-    if (target) {
-        target.classList.add('active');
-    }
+    if (target) target.classList.add('active');
     
-    // Auto-close menu on mobile
     const sideMenu = document.getElementById('side-menu');
     const overlay = document.getElementById('menu-overlay');
     if (sideMenu) sideMenu.classList.remove('active');
@@ -841,89 +578,8 @@ document.getElementById('do-login').onclick = async () => {
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
-            
-            // Show the stake screen by default
             navTo('stake');
-            
-                const doSignupBtn = document.getElementById('do-signup');
-    if (doSignupBtn) {
-        doSignupBtn.onclick = async () => {
-            const name = document.getElementById('signup-name').value;
-            const telegram_chat_id = document.getElementById('signup-telegram').value;
-            const password = document.getElementById('signup-pass').value;
-            const errorEl = document.getElementById('auth-error');
-
-            if (!name || !telegram_chat_id || !password) {
-                if (errorEl) errorEl.innerText = "ሁሉንም መረጃዎች ያስገቡ";
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/signup-request', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ telegram_chat_id })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    document.getElementById('signup-form').style.display = 'none';
-                    document.getElementById('otp-form').style.display = 'block';
-                    const hint = document.getElementById('otp-hint');
-                    if (hint) hint.innerText = `OTP ወደ ቴሌግራም (${telegram_chat_id}) ተልኳል`;
-                    
-                    window.signupTempData = { name, telegram_chat_id, password };
-                } else {
-                    if (errorEl) errorEl.innerText = data.error;
-                }
-            } catch (e) { console.error(e); }
-        };
-    }
-
-    const verifyOtpBtn = document.getElementById('verify-otp');
-    if (verifyOtpBtn) {
-        verifyOtpBtn.onclick = async () => {
-            const otp = document.getElementById('otp-code').value;
-            const errorEl = document.getElementById('auth-error');
-            const signupData = window.signupTempData;
-
-            if (!otp) return alert("OTP ያስገቡ");
-            if (!signupData) return alert("የምዝገባ መረጃ አልተገኘም፣ እባክዎ እንደገና ይሞክሩ");
-
-            try {
-                const res = await fetch('/api/signup-verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...signupData, otp })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    localStorage.setItem('bingo_token', data.token);
-                    updateUserData(data);
-                    document.getElementById('auth-screen').style.display = 'none';
-                    document.getElementById('main-content').style.display = 'block';
-                    navTo('stake');
-                    initApp();
-                } else {
-                    if (errorEl) errorEl.innerText = data.error;
-                }
-            } catch (e) { console.error(e); }
-        };
-    }
-
-    initApp();
-}
-
-window.showSignup = () => {
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('signup-form').style.display = 'block';
-    document.getElementById('otp-form').style.display = 'none';
-};
-
-window.showLogin = () => {
-    document.getElementById('login-form').style.display = 'block';
-    document.getElementById('signup-form').style.display = 'none';
-    document.getElementById('otp-form').style.display = 'none';
-};
+            initApp();
         } else {
             if (errorEl) errorEl.innerText = data.error || 'Login failed';
         }
@@ -933,74 +589,6 @@ window.showLogin = () => {
     }
 };
 
-    const doSignupBtn = document.getElementById('do-signup');
-    if (doSignupBtn) {
-        doSignupBtn.onclick = async () => {
-            const name = document.getElementById('signup-name').value;
-            const telegram_chat_id = document.getElementById('signup-telegram').value;
-            const password = document.getElementById('signup-pass').value;
-            const errorEl = document.getElementById('auth-error');
-
-            if (!name || !telegram_chat_id || !password) {
-                if (errorEl) errorEl.innerText = "ሁሉንም መረጃዎች ያስገቡ";
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/signup-request', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ telegram_chat_id })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    document.getElementById('signup-form').style.display = 'none';
-                    document.getElementById('otp-form').style.display = 'block';
-                    const hint = document.getElementById('otp-hint');
-                    if (hint) hint.innerText = `OTP ወደ ቴሌግራም (${telegram_chat_id}) ተልኳል`;
-                    
-                    window.signupTempData = { name, telegram_chat_id, password };
-                } else {
-                    if (errorEl) errorEl.innerText = data.error;
-                }
-            } catch (e) { console.error(e); }
-        };
-    }
-
-    const verifyOtpBtn = document.getElementById('verify-otp');
-    if (verifyOtpBtn) {
-        verifyOtpBtn.onclick = async () => {
-            const otp = document.getElementById('otp-code').value;
-            const errorEl = document.getElementById('auth-error');
-            const signupData = window.signupTempData;
-
-            if (!otp) return alert("OTP ያስገቡ");
-            if (!signupData) return alert("የምዝገባ መረጃ አልተገኘም፣ እባክዎ እንደገና ይሞክሩ");
-
-            try {
-                const res = await fetch('/api/signup-verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...signupData, otp })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    localStorage.setItem('bingo_token', data.token);
-                    updateUserData(data);
-                    document.getElementById('auth-screen').style.display = 'none';
-                    document.getElementById('main-content').style.display = 'block';
-                    navTo('stake');
-                    initApp();
-                } else {
-                    if (errorEl) errorEl.innerText = data.error;
-                }
-            } catch (e) { console.error(e); }
-        };
-    }
-
-    initApp();
-}
-
 window.showSignup = () => {
     document.getElementById('login-form').style.display = 'none';
     document.getElementById('signup-form').style.display = 'block';
@@ -1012,3 +600,111 @@ window.showLogin = () => {
     document.getElementById('signup-form').style.display = 'none';
     document.getElementById('otp-form').style.display = 'none';
 };
+
+const doSignupBtn = document.getElementById('do-signup');
+if (doSignupBtn) {
+    doSignupBtn.onclick = async () => {
+        const name = document.getElementById('signup-name').value;
+        const telegram_chat_id = document.getElementById('signup-telegram').value;
+        const password = document.getElementById('signup-pass').value;
+        const errorEl = document.getElementById('auth-error');
+
+        if (!name || !telegram_chat_id || !password) {
+            if (errorEl) errorEl.innerText = "ሁሉንም መረጃዎች ያስገቡ";
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/signup-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ telegram_chat_id })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('signup-form').style.display = 'none';
+                document.getElementById('otp-form').style.display = 'block';
+                const hint = document.getElementById('otp-hint');
+                if (hint) hint.innerText = `OTP ወደ ቴሌግራም (${telegram_chat_id}) ተልኳል`;
+                
+                window.signupTempData = { name, telegram_chat_id, password };
+            } else {
+                if (errorEl) errorEl.innerText = data.error;
+            }
+        } catch (e) { console.error(e); }
+    };
+}
+
+const verifyOtpBtn = document.getElementById('verify-otp');
+if (verifyOtpBtn) {
+    verifyOtpBtn.onclick = async () => {
+        const otp = document.getElementById('otp-code').value;
+        const errorEl = document.getElementById('auth-error');
+        const signupData = window.signupTempData;
+
+        if (!otp) return alert("OTP ያስገቡ");
+        if (!signupData) return alert("የምዝገባ መረጃ አልተገኘም፣ እባክዎ እንደገና ይሞክሩ");
+
+        try {
+            const res = await fetch('/api/signup-verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...signupData, otp })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('bingo_token', data.token);
+                updateUserData(data);
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                navTo('stake');
+                initApp();
+            } else {
+                if (errorEl) errorEl.innerText = data.error;
+            }
+        } catch (e) { console.error(e); }
+    };
+}
+
+function promptAdminPassword() {
+    const pass = prompt("አድሚን ፓስወርድ ያስገቡ:");
+    if (pass === "fidel123") {
+        navTo('admin');
+    } else {
+        alert("የተሳሳተ ፓስወርድ!");
+    }
+}
+window.promptAdminPassword = promptAdminPassword;
+
+const submitWithdraw = document.getElementById('submit-withdraw');
+if (submitWithdraw) {
+    submitWithdraw.onclick = async () => {
+        const amount = parseFloat(document.getElementById('withdraw-amount').value);
+        const method = document.getElementById('withdraw-method').value;
+        const account = document.getElementById('withdraw-account').value;
+        const statusEl = document.getElementById('withdraw-status');
+        const token = localStorage.getItem('bingo_token');
+
+        if (isNaN(amount) || amount < 50) return alert("Minimum withdrawal is 50 ETB");
+        if (!account) return alert("Please enter account details");
+
+        try {
+            const res = await fetch('/api/withdraw-request', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ amount, method, account })
+            });
+            const data = await res.json();
+            statusEl.innerText = data.message || data.error;
+            if (res.ok) {
+                userBalance -= amount;
+                updateUserData({ balance: userBalance });
+            }
+        } catch (e) { console.error(e); }
+    };
+}
+
+initApp();
