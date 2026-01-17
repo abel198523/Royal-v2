@@ -260,6 +260,18 @@
                         <button class="tab-btn active" onclick="switchAdminTab('users')">Users</button>
                         <button class="tab-btn" onclick="switchAdminTab('deposits')">Deposits</button>
                         <button class="tab-btn" onclick="switchAdminTab('withdrawals')">Withdrawals</button>
+                        <button class="tab-btn" onclick="switchAdminTab('broadcast')">Broadcast</button>
+                    </div>
+
+                    <div id="admin-broadcast-tab" class="admin-tab-content">
+                        <div class="deposit-section">
+                            <h3 style="margin-bottom: 15px; font-size: 1.1rem;">Send Message to All Users</h3>
+                            <div class="input-group">
+                                <label>Message (መልዕክት)</label>
+                                <textarea id="broadcast-message" class="form-input" rows="5" placeholder="ለሁሉም ተጠቃሚዎች የሚተላለፍ መልዕክት እዚህ ያስገቡ..." style="resize: none; font-size: 0.9rem;"></textarea>
+                            </div>
+                            <button id="send-broadcast" class="wallet-btn deposit" style="width: 100%; margin-top: 10px;">Send Broadcast</button>
+                        </div>
                     </div>
 
                     <div id="admin-users-tab" class="admin-tab-content active">

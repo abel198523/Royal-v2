@@ -418,6 +418,44 @@ app.get('/api/balance-history', async (req, res) => {
     }
 });
 
+app.post('/api/admin/broadcast', adminOnly, async (req, res) => {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: "መልዕክት ያስገቡ" });
+
+    try {
+        const result = await db.query('SELECT telegram_chat_id FROM users WHERE telegram_chat_id IS NOT NULL');
+        const botToken = process.env.TELEGRAM_BOT_TOKEN;
+        const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+        
+        const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+        
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const user of result.rows) {
+            try {
+                await fetch(telegramUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: user.telegram_chat_id,
+                        text: message
+                    })
+                });
+                successCount++;
+            } catch (err) {
+                console.error(`Failed to send broadcast to ${user.telegram_chat_id}:`, err);
+                failCount++;
+            }
+        }
+
+        res.json({ message: `ብሮድካስት ተጠናቋል! ለ ${successCount} ተጠቃሚዎች ተልኳል: ${failCount} አልተሳካም።` });
+    } catch (err) {
+        console.error('Broadcast Error:', err);
+        res.status(500).json({ error: "ብሮድካስት ማድረግ አልተቻለም: " + err.message });
+    }
+});
+
 function startRoomCountdown(amount) {
     const room = rooms[amount];
     if (!room) return;

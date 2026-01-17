@@ -576,12 +576,55 @@ function updateBalanceDisplay() {
 window.switchAdminTab = (tabName) => {
     document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`admin-${tabName}-tab`).classList.add('active');
-    if (event && event.target) event.target.classList.add('active');
+    
+    const tabEl = document.getElementById(`admin-${tabName}-tab`);
+    if (tabEl) tabEl.classList.add('active');
+    
+    // Find the button and add active class
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => {
+        if (btn.getAttribute('onclick') === `switchAdminTab('${tabName}')`) {
+            btn.classList.add('active');
+        }
+    });
     
     if (tabName === 'deposits') loadPendingDeposits();
     if (tabName === 'withdrawals') loadPendingWithdrawals();
 };
+
+const broadcastBtn = document.getElementById('send-broadcast');
+if (broadcastBtn) {
+    broadcastBtn.onclick = async () => {
+        const message = document.getElementById('broadcast-message').value;
+        const token = localStorage.getItem('bingo_token');
+
+        if (!message) return alert("እባክዎ መልዕክት ያስገቡ");
+        if (!confirm("ይህ መልዕክት ለሁሉም ተጠቃሚዎች ይላካል። እርግጠኛ ነዎት?")) return;
+
+        broadcastBtn.disabled = true;
+        broadcastBtn.innerText = "Sending...";
+        
+        try {
+            const res = await fetch('/api/admin/broadcast', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ message })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if (res.ok) document.getElementById('broadcast-message').value = '';
+        } catch (e) { 
+            console.error(e);
+            alert("የግንኙነት ስህተት");
+        } finally {
+            broadcastBtn.disabled = false;
+            broadcastBtn.innerText = "Send Broadcast";
+        }
+    };
+}
 
 async function loadPendingWithdrawals() {
     const listEl = document.getElementById('admin-withdrawals-list');
