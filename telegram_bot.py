@@ -54,14 +54,10 @@ def handle_contact(message):
                 cur.execute("UPDATE users SET telegram_chat_id = %s WHERE id = %s", (chat_id, user_id))
                 conn.commit()
                 
-                # Ask for room selection after successful contact link
-                markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
-                markup.add("5 Birr", "10 Birr", "20 Birr")
-                
                 bot.send_message(
                     message.chat.id, 
-                    f"ምዝገባው ተጠናቋል! ሰላም {name}፣ የቴሌግራም አካውንትዎ (ID: {chat_id}) ከሂሳብዎ ጋር በትክክል ተገናኝቷል።\n\nእባክዎ መጫወት የሚፈልጉትን የመጫወቻ መጠን ይምረጡ፡",
-                    reply_markup=markup
+                    f"ምዝገባው ተጠናቋል! ሰላም {name}፣ የቴሌግራም አካውንትዎ (ID: {chat_id}) ከሂሳብዎ ጋር በትክክል ተገናኝቷል።",
+                    reply_markup=types.ReplyKeyboardRemove()
                 )
             else:
                 bot.send_message(
@@ -75,37 +71,6 @@ def handle_contact(message):
         except Exception as e:
             print(f"Error: {e}")
             bot.send_message(message.chat.id, "ስህተት አጋጥሟል። እባክዎ ቆይተው ይሞክሩ።")
-
-@bot.message_handler(func=lambda message: message.text in ["5 Birr", "10 Birr", "20 Birr"])
-def handle_room_selection(message):
-    room_amount = message.text.split()[0]
-    chat_id = str(message.chat.id)
-    
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        
-        # Verify user is linked
-        cur.execute("SELECT id FROM users WHERE telegram_chat_id = %s", (chat_id,))
-        user = cur.fetchone()
-        
-        if user:
-            # Here we could store the 'selected room' preference if there was a column for it,
-            # but usually bingo rooms are joined dynamically. 
-            # For now, we'll just confirm the selection as requested.
-            bot.send_message(
-                message.chat.id, 
-                f"በጥሩ ሁኔታ ተመርጧል! በ {room_amount} ብር መጫወት ይችላሉ። መልካም እድል!",
-                reply_markup=types.ReplyKeyboardRemove()
-            )
-        else:
-            bot.send_message(message.chat.id, "እባክዎ መጀመሪያ 'Share Contact' የሚለውን ቁልፍ በመጫን ይመዝገቡ።")
-            
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print(f"Error in room selection: {e}")
-        bot.send_message(message.chat.id, "ስህተት አጋጥሟል።")
 
 if __name__ == "__main__":
     print("Bot is starting...")
