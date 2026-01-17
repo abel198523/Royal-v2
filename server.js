@@ -34,64 +34,52 @@ STAKES.forEach(amount => {
 let pendingOTP = {}; // Store temporary signup data
 
 app.post('/api/signup-request', async (req, res) => {
-    const { phone, telegram_chat_id } = req.body;
-    if (!phone) return res.status(400).json({ error: "ስልክ ቁጥር ያስገቡ" });
+    const { telegram_chat_id } = req.body;
     if (!telegram_chat_id) return res.status(400).json({ error: "የቴሌግራም Chat ID ያስገቡ" });
 
     try {
-        const existing = await db.query('SELECT id FROM users WHERE phone_number = $1', [phone]);
-        if (existing.rows.length > 0) {
-            return res.status(400).json({ error: "ይህ ስልክ ቁጥር ቀድሞ ተመዝግቧል" });
-        }
-
         const otp = Math.floor(1000 + Math.random() * 9000).toString();
-        pendingOTP[phone] = { otp, telegram_chat_id, timestamp: Date.now() };
+        pendingOTP[telegram_chat_id] = { otp, timestamp: Date.now() };
         
         // Send OTP via Telegram
         const botToken = process.env.TELEGRAM_BOT_TOKEN;
         const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
         
-        try {
-            const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-            await fetch(telegramUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: telegram_chat_id,
-                    text: `የ Fidel Bingo ማረጋገጫ ኮድ: ${otp}`
-                })
-            });
-            console.log(`Telegram OTP sent to ${telegram_chat_id}: ${otp}`);
-        } catch (tgErr) {
-            console.error('Telegram Send Error:', tgErr);
-            // Fallback for testing if bot fails
-            console.log(`\n--- OTP VERIFICATION (FALLBACK) ---\nPhone: ${phone}\nCode: ${otp}\n------------------------\n`);
-        }
+        const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+        await fetch(telegramUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: telegram_chat_id,
+                text: `የ Fidel Bingo ማረጋገጫ ኮድ: ${otp}`
+            })
+        });
         
         res.json({ message: "የማረጋገጫ ኮድ በቴሌግራም ተልኳል።" });
     } catch (err) {
-        console.error('Signup Request Error:', err);
-        res.status(500).json({ error: "የሰርቨር ስህተት አጋጥሟል: " + err.message });
+        res.status(500).json({ error: "የሰርቨር ስህተት አጋጥሟል" });
     }
 });
 
 app.post('/api/signup-verify', async (req, res) => {
-    const { phone, password, name, otp } = req.body;
+    const { telegram_chat_id, password, name, phone, otp } = req.body;
     try {
-        const record = pendingOTP[phone];
+        const record = pendingOTP[telegram_chat_id];
         if (!record || record.otp !== otp) {
             return res.status(400).json({ error: "የተሳሳተ የኦቲፒ ኮድ" });
         }
 
-        const { telegram_chat_id } = record;
-        // Clean up OTP
-        delete pendingOTP[phone];
+        delete pendingOTP[telegram_chat_id];
 
         const hash = await bcrypt.hash(password, 10);
         const playerId = 'PL' + Math.floor(1000 + Math.random() * 9000);
+        
+        // Use telegram_chat_id as phone if phone is not provided
+        const finalPhone = phone || telegram_chat_id;
+
         const result = await db.query(
             'INSERT INTO users (phone_number, password_hash, username, name, balance, player_id, telegram_chat_id) VALUES ($1, $2, $3, $4, 0, $5, $6) RETURNING *',
-            [phone, hash, phone, name, playerId, telegram_chat_id]
+            [finalPhone, hash, finalPhone, name, playerId, telegram_chat_id]
         );
         const user = result.rows[0];
         const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin }, SECRET_KEY);
