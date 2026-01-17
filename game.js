@@ -819,27 +819,26 @@ if (doSignupBtn) {
     doSignupBtn.onclick = async () => {
         const name = document.getElementById('signup-name').value;
         const phone = document.getElementById('signup-phone').value;
+        const telegram_chat_id = document.getElementById('signup-telegram').value;
         const password = document.getElementById('signup-pass').value;
         const errorEl = document.getElementById('auth-error');
 
-        if (!name || !phone || !password) return alert("እባክዎ ሁሉንም መረጃዎች ያስገቡ");
+        if (!name || !phone || !password || !telegram_chat_id) return alert("እባክዎ ሁሉንም መረጃዎች ያስገቡ");
 
         try {
             const res = await fetch('/api/signup-request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone })
+                body: JSON.stringify({ phone, telegram_chat_id })
             });
             const data = await res.json();
             if (res.ok) {
                 document.getElementById('signup-form').style.display = 'none';
                 document.getElementById('otp-form').style.display = 'block';
                 const hint = document.getElementById('otp-hint');
-                if (hint) hint.innerText = data.message;
-                // For testing convenience
-                if (data.otp) document.getElementById('otp-code').value = data.otp;
+                if (hint) hint.innerText = "ኮዱ ወደ ቴሌግራምዎ ተልኳል";
             } else {
-                errorEl.innerText = data.error;
+                if (errorEl) errorEl.innerText = data.error;
             }
         } catch (e) { console.error(e); }
     };
@@ -902,27 +901,26 @@ if (doSignupBtn) {
     doSignupBtn.onclick = async () => {
         const name = document.getElementById('signup-name').value;
         const phone = document.getElementById('signup-phone').value;
+        const telegram_chat_id = document.getElementById('signup-telegram').value;
         const password = document.getElementById('signup-pass').value;
         const errorEl = document.getElementById('auth-error');
 
-        if (!name || !phone || !password) return alert("እባክዎ ሁሉንም መረጃዎች ያስገቡ");
+        if (!name || !phone || !password || !telegram_chat_id) return alert("እባክዎ ሁሉንም መረጃዎች ያስገቡ");
 
         try {
             const res = await fetch('/api/signup-request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone })
+                body: JSON.stringify({ phone, telegram_chat_id })
             });
             const data = await res.json();
             if (res.ok) {
                 document.getElementById('signup-form').style.display = 'none';
                 document.getElementById('otp-form').style.display = 'block';
                 const hint = document.getElementById('otp-hint');
-                if (hint) hint.innerText = data.message;
-                // For testing convenience
-                if (data.otp) document.getElementById('otp-code').value = data.otp;
+                if (hint) hint.innerText = "ኮዱ ወደ ቴሌግራምዎ ተልኳል";
             } else {
-                errorEl.innerText = data.error;
+                if (errorEl) errorEl.innerText = data.error;
             }
         } catch (e) { console.error(e); }
     };
