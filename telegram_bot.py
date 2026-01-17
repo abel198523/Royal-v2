@@ -37,7 +37,7 @@ def handle_contact(message):
         
         bot.send_message(
             message.chat.id, 
-            f"የእርስዎ ቻት አይዲ (Chat ID)፡ `{chat_id}`\n\nእባክዎ ይህንን ኮፒ አድርገው አፑ ላይ ይመዝገቡ።\n\nየዌብሳይት ሊንክ፡ https://f8f3f826-54e0-4041-b327-2bc772ec9452-00-1qr0kb4ib98ue.worf.replit.dev",
+            f"የእርስዎ ቻት አይዲ (Chat ID)፡ `{chat_id}` 👈\n\nእባክዎ ይህንን ኮፒ አድርገው አፑ ላይ ይመዝገቡ።\n\nየዌብሳይት ሊንክ፡ https://f8f3f826-54e0-4041-b327-2bc772ec9452-00-1qr0kb4ib98ue.worf.replit.dev",
             parse_mode='Markdown'
         )
 
