@@ -56,7 +56,7 @@ def handle_contact(message):
                 
                 bot.send_message(
                     message.chat.id, 
-                    f"ምዝገባው ተጠናቋል! ሰላም {name}፣ የቴሌግራም አካውንትዎ (ID: {chat_id}) ከሂሳብዎ ጋር በትክክል ተገናኝቷል።",
+                    f"ምዝገባው ተጠናቋል! ሰላም {name}፣ የቴሌግራም አካውንትዎ (ID: {chat_id}) ከሂሳብዎ ጋር በትክክል ተገናኝቷል።\n\nለመጫወት ይህንን ሊንክ ይጫኑ፡ https://f8f3f826-54e0-4041-b327-2bc772ec9452-00-1qr0kb4ib98ue.worf.replit.dev",
                     reply_markup=types.ReplyKeyboardRemove()
                 )
             else:
