@@ -9,7 +9,7 @@ load_dotenv()
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 DATABASE_URL = os.getenv('DATABASE_URL')
 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot(TOKEN, threaded=False)
 
 def get_db_connection():
     return psycopg2.connect(DATABASE_URL)
