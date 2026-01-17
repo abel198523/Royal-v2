@@ -559,35 +559,38 @@ function navTo(screenId) {
 
 window.navTo = navTo;
 
-document.getElementById('do-login').onclick = async () => {
-    const phone = document.getElementById('login-phone').value;
-    const password = document.getElementById('login-pass').value;
-    const errorEl = document.getElementById('auth-error');
-    if (errorEl) errorEl.innerText = '';
+const doLoginBtn = document.getElementById('do-login');
+if (doLoginBtn) {
+    doLoginBtn.onclick = async () => {
+        const phone = document.getElementById('login-phone').value;
+        const password = document.getElementById('login-pass').value;
+        const errorEl = document.getElementById('auth-error');
+        if (errorEl) errorEl.innerText = '';
 
-    try {
-        const res = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-            localStorage.setItem('bingo_token', data.token);
-            updateUserData(data);
-            document.getElementById('auth-screen').classList.remove('active');
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-content').style.display = 'block';
-            navTo('stake');
-            initApp();
-        } else {
-            if (errorEl) errorEl.innerText = data.error || 'Login failed';
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('bingo_token', data.token);
+                updateUserData(data);
+                document.getElementById('auth-screen').classList.remove('active');
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                navTo('stake');
+                initApp();
+            } else {
+                if (errorEl) errorEl.innerText = data.error || 'Login failed';
+            }
+        } catch (e) { 
+            console.error(e);
+            if (errorEl) errorEl.innerText = 'Connection error';
         }
-    } catch (e) { 
-        console.error(e);
-        if (errorEl) errorEl.innerText = 'Connection error';
-    }
-};
+    };
+}
 
 window.showSignup = () => {
     document.getElementById('login-form').style.display = 'none';
