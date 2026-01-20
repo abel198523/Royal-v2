@@ -29,16 +29,19 @@ def start(message):
     markup = types.InlineKeyboardMarkup()
     # Constructing URL based on the Replit project domain
     import os
-    # Prefer REPL_ID based domain as it's more stable in modern Replit
-    repl_id = os.environ.get('REPL_ID')
-    repl_slug = os.environ.get('REPL_SLUG', 'workspace')
-    repl_owner = os.environ.get('REPL_OWNER')
-    
-    # Modern Replit public URL format
-    if repl_owner and repl_slug:
-        web_url = f"https://{repl_slug}.{repl_owner}.repl.co"
+    # Replit provides REPLIT_DEV_DOMAIN which is the most reliable way to get the public URL
+    web_url = os.environ.get('REPLIT_DEV_DOMAIN')
+    if web_url:
+        if not web_url.startswith('http'):
+            web_url = f"https://{web_url}"
     else:
-        web_url = "https://fidel-bingo.replit.app"
+        # Fallback to slug/owner if domain is not set
+        repl_slug = os.environ.get('REPL_SLUG', 'workspace')
+        repl_owner = os.environ.get('REPL_OWNER')
+        if repl_owner:
+            web_url = f"https://{repl_slug}.{repl_owner}.repl.co"
+        else:
+            web_url = "https://fidel-bingo.replit.app"
     
     web_button = types.InlineKeyboardButton("ዌብሳይት ለመክፈት ይጫኑ (Open Website)", url=web_url)
     markup.add(web_button)
