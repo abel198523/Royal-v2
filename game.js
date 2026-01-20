@@ -604,9 +604,107 @@ function showScreen(screenId) {
 
 function updateProfile() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    document.getElementById('prof-username').innerText = user.username || 'Guest';
-    document.getElementById('prof-balance').innerText = `${user.balance || 0} ETB`;
+    const token = localStorage.getItem('token');
+
+    // Update basic info
+    const usernameEls = ['prof-username', 'stake-username', 'profile-username-top', 'sel-username'];
+    usernameEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = user.username || 'Guest';
+    });
+
+    const balanceEls = ['prof-balance', 'wallet-balance-value', 'withdraw-balance-value', 'sel-balance'];
+    balanceEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = `${user.balance || 0} ETB`;
+    });
+
+    // Fetch latest data from server if logged in
+    if (token) {
+        fetch('/api/login', { // Re-using login endpoint or similar to get fresh data
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(JSON.parse(localStorage.getItem('loginCredentials')))
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.user) {
+                localStorage.setItem('user', JSON.stringify(data.user));
+                updateProfileUI(data.user);
+            }
+        });
+        
+        fetch('/api/balance-history', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(history => {
+            renderBalanceHistory(history);
+        });
+    }
 }
+
+function updateProfileUI(user) {
+    const balanceEls = ['prof-balance', 'wallet-balance-value', 'withdraw-balance-value', 'sel-balance'];
+    balanceEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = `${user.balance || 0} ETB`;
+    });
+    
+    if (document.getElementById('profile-full-name')) {
+        document.getElementById('profile-full-name').innerText = user.name || user.username;
+    }
+}
+
+function renderBalanceHistory(history) {
+    const list = document.getElementById('balance-history-list');
+    if (!list) return;
+    
+    if (!history || history.length === 0) {
+        list.innerHTML = '<p class="empty-msg">No transactions yet.</p>';
+        return;
+    }
+    
+    list.innerHTML = history.map(item => `
+        <div class="history-item">
+            <div class="hist-main">
+                <span class="hist-type ${item.type}">${item.type.toUpperCase()}</span>
+                <span class="hist-desc">${item.description || ''}</span>
+            </div>
+            <div class="hist-meta">
+                <span class="hist-amount ${item.amount >= 0 ? 'plus' : 'minus'}">
+                    ${item.amount >= 0 ? '+' : ''}${item.amount} ETB
+                </span>
+                <span class="hist-date">${new Date(item.created_at).toLocaleDateString()}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function closeMenu() {
+    document.getElementById('side-menu').classList.remove('active');
+    document.getElementById('menu-overlay').classList.remove('active');
+}
+
+// Sidebar toggle logic
+document.addEventListener('DOMContentLoaded', () => {
+    const menuLogoTrigger = document.getElementById('menu-logo-trigger');
+    const openMenuStake = document.getElementById('open-menu-stake');
+    const openMenuGame = document.getElementById('open-menu-game');
+    const closeMenuBtn = document.getElementById('close-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const sideMenu = document.getElementById('side-menu');
+
+    const toggleMenu = () => {
+        sideMenu.classList.toggle('active');
+        menuOverlay.classList.toggle('active');
+    };
+
+    if (openMenuStake) openMenuStake.onclick = toggleMenu;
+    if (openMenuGame) openMenuGame.onclick = toggleMenu;
+    if (closeMenuBtn) closeMenuBtn.onclick = toggleMenu;
+    if (menuOverlay) menuOverlay.onclick = toggleMenu;
+});
 
 async function requestOTP() {
     const phone = document.getElementById('reg-phone').value;
