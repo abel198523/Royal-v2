@@ -381,6 +381,105 @@ function updateCardHighlights(cardData, history) {
 }
 
 // Simple Tab Switching
+// Event Listeners for Auth
+document.addEventListener('DOMContentLoaded', () => {
+    const signupBtn = document.getElementById('do-signup');
+    if (signupBtn) {
+        signupBtn.addEventListener('click', async () => {
+            const username = document.getElementById('signup-username').value;
+            const telegramId = document.getElementById('signup-telegram').value;
+            const password = document.getElementById('signup-pass').value;
+
+            if (!username || !telegramId || !password) {
+                showToast('እባክዎ ሁሉንም ክፍተቶች ይሙሉ።');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/signup-request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, telegram_chat_id: telegramId, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message);
+                    document.getElementById('signup-form').style.display = 'none';
+                    document.getElementById('otp-form').style.display = 'block';
+                } else {
+                    showToast(data.error || 'ስህተት ተፈጥሯል።');
+                }
+            } catch (e) {
+                showToast('ከሰርቨር ጋር መገናኘት አልተቻለም።');
+            }
+        });
+    }
+
+    const verifyOtpBtn = document.getElementById('verify-otp');
+    if (verifyOtpBtn) {
+        verifyOtpBtn.addEventListener('click', async () => {
+            const otp = document.getElementById('otp-code').value;
+            const telegramId = document.getElementById('signup-telegram').value;
+            const username = document.getElementById('signup-username').value;
+            const password = document.getElementById('signup-pass').value;
+
+            if (!otp) {
+                showToast('እባክዎ የማረጋገጫ ኮዱን ያስገቡ።');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/signup-verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ otp, telegram_chat_id: telegramId, username, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('ምዝገባዎ ተጠናቋል። አሁን መግባት ይችላሉ።');
+                    showLogin();
+                } else {
+                    showToast(data.error || 'የተሳሳተ ኮድ።');
+                }
+            } catch (e) {
+                showToast('ከሰርቨር ጋር መገናኘት አልተቻለም።');
+            }
+        });
+    }
+
+    const loginBtn = document.getElementById('do-login');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', async () => {
+            const phone = document.getElementById('login-phone').value;
+            const password = document.getElementById('login-pass').value;
+
+            if (!phone || !password) {
+                showToast('እባክዎ ስልክ እና ፓስወርድ ያስገቡ።');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    showToast('እንኳን በደህና መጡ!');
+                    navTo('stake');
+                } else {
+                    showToast(data.error || 'የተሳሳተ ስልክ ወይም ፓስወርድ።');
+                }
+            } catch (e) {
+                showToast('ከሰርቨር ጋር መገናኘት አልተቻለም።');
+            }
+        });
+    }
+});
+
 function showAuth(type) {
     document.getElementById('welcome-screen').classList.remove('active');
     document.getElementById('auth-screen').classList.add('active');
