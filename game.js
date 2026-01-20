@@ -381,6 +381,51 @@ function updateCardHighlights(cardData, history) {
 }
 
 // Simple Tab Switching
+function showAuth(type) {
+    document.getElementById('welcome-screen').classList.remove('active');
+    document.getElementById('auth-screen').classList.add('active');
+    if (type === 'signup') {
+        showSignup();
+    } else {
+        showLogin();
+    }
+}
+
+function showSignup() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('signup-form').style.display = 'block';
+    document.getElementById('otp-form').style.display = 'none';
+}
+
+function showLogin() {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('signup-form').style.display = 'none';
+    document.getElementById('otp-form').style.display = 'none';
+}
+
+function navTo(screenId) {
+    const screens = ['stake-screen', 'selection-screen', 'game-screen', 'profile-screen', 'wallet-screen', 'deposit-screen', 'withdraw-screen', 'admin-screen'];
+    screens.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.classList.remove('active');
+    });
+    
+    // Also hide auth and welcome screens when navigating to app screens
+    document.getElementById('welcome-screen').classList.remove('active');
+    document.getElementById('auth-screen').classList.remove('active');
+    document.getElementById('main-content').style.display = 'block';
+    
+    const target = document.getElementById(screenId + '-screen');
+    if (target) {
+        target.classList.add('active');
+    } else {
+        const directTarget = document.getElementById(screenId);
+        if (directTarget) directTarget.classList.add('active');
+    }
+    
+    if (screenId === 'profile') updateProfile();
+}
+
 function showScreen(screenId) {
     const screens = ['stake-screen', 'selection-screen', 'game-screen', 'profile-screen', 'wallet-screen'];
     screens.forEach(s => {
