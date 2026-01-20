@@ -27,7 +27,20 @@ def start(message):
     )
     
     markup = types.InlineKeyboardMarkup()
-    web_button = types.InlineKeyboardButton("ዌብሳይት ለመክፈት ይጫኑ (Open Website)", url="https://7b483841-159f-431f-b19b-e1a538bf7de9-00-2vo9ydcrpkapq.picard.replit.dev/")
+    # Constructing URL based on the Replit project domain
+    import os
+    # Prefer REPL_ID based domain as it's more stable in modern Replit
+    repl_id = os.environ.get('REPL_ID')
+    repl_slug = os.environ.get('REPL_SLUG', 'workspace')
+    repl_owner = os.environ.get('REPL_OWNER')
+    
+    # Modern Replit public URL format
+    if repl_owner and repl_slug:
+        web_url = f"https://{repl_slug}.{repl_owner}.repl.co"
+    else:
+        web_url = "https://fidel-bingo.replit.app"
+    
+    web_button = types.InlineKeyboardButton("ዌብሳይት ለመክፈት ይጫኑ (Open Website)", url=web_url)
     markup.add(web_button)
     
     bot.send_message(message.chat.id, msg, parse_mode='Markdown', reply_markup=markup)
