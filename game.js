@@ -382,7 +382,32 @@ function updateCardHighlights(cardData, history) {
 
 // Simple Tab Switching
 // Event Listeners for Auth
+function renderStakes() {
+    const stakeList = document.getElementById('stake-list');
+    if (!stakeList) return;
+    stakeList.innerHTML = '';
+    
+    STAKES.forEach(amount => {
+        const row = document.createElement('div');
+        row.className = 'stake-row';
+        row.onclick = () => selectRoom(amount);
+        
+        row.innerHTML = `
+            <div class="stake-info">
+                <div class="stake-amount">${amount} ETB</div>
+                <div class="stake-status" id="stake-count-${amount}">0 Players</div>
+            </div>
+            <div class="stake-meta">
+                <div class="stake-prize" id="stake-prize-${amount}">Prize: 0.00 ETB</div>
+                <div class="stake-timer" id="stake-timer-${amount}">⏰ 30</div>
+            </div>
+        `;
+        stakeList.appendChild(row);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    renderStakes();
     const signupBtn = document.getElementById('do-signup');
     if (signupBtn) {
         signupBtn.addEventListener('click', async () => {
