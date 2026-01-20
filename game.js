@@ -629,12 +629,12 @@ window.showLogin = () => {
 const doSignupBtn = document.getElementById('do-signup');
 if (doSignupBtn) {
     doSignupBtn.onclick = async () => {
-        const name = document.getElementById('signup-name').value;
+        const username = document.getElementById('signup-username').value;
         const telegram_chat_id = document.getElementById('signup-telegram').value;
         const password = document.getElementById('signup-pass').value;
         const errorEl = document.getElementById('auth-error');
 
-        if (!name || !telegram_chat_id || !password) {
+        if (!username || !telegram_chat_id || !password) {
             if (errorEl) errorEl.innerText = "ሁሉንም መረጃዎች ያስገቡ";
             return;
         }
@@ -643,7 +643,7 @@ if (doSignupBtn) {
             const res = await fetch('/api/signup-request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telegram_chat_id })
+                body: JSON.stringify({ telegram_chat_id, username })
             });
             const data = await res.json();
             if (res.ok) {
@@ -652,7 +652,7 @@ if (doSignupBtn) {
                 const hint = document.getElementById('otp-hint');
                 if (hint) hint.innerText = `OTP ወደ ቴሌግራም (${telegram_chat_id}) ተልኳል`;
                 
-                window.signupTempData = { name, telegram_chat_id, password };
+                window.signupTempData = { username, telegram_chat_id, password };
             } else {
                 if (errorEl) errorEl.innerText = data.error;
             }
