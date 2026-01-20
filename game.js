@@ -559,6 +559,14 @@ function navTo(screenId) {
 
 window.navTo = navTo;
 
+function startApp() {
+    const welcome = document.getElementById('welcome-screen');
+    const auth = document.getElementById('auth-screen');
+    if (welcome) welcome.classList.remove('active');
+    if (auth) auth.classList.add('active');
+}
+window.startApp = startApp;
+
 const doLoginBtn = document.getElementById('do-login');
 if (doLoginBtn) {
     doLoginBtn.onclick = async () => {
