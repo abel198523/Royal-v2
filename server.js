@@ -26,7 +26,8 @@ STAKES.forEach(amount => {
         gameInterval: null,
         gameCountdown: 30,
         countdownInterval: null,
-        players: new Set()
+        players: new Set(),
+        takenCards: new Set()
     };
 });
 
@@ -762,6 +763,7 @@ wss.on('connection', (ws) => {
                             p.cardNumber = null;
                             p.cardData = null;
                         });
+                        room.takenCards.clear();
                         
                         updateGlobalStats();
                         setTimeout(() => startRoomCountdown(data.room), 5000);
@@ -821,62 +823,68 @@ wss.on('connection', (ws) => {
             }
         }
         
-        if (data.type === 'BUY_CARD') {
-            if (!ws.room || !ws.userId) return;
+            if (data.type === 'BUY_CARD') {
+                if (!ws.room || !ws.userId) return;
 
-            const room = rooms[ws.room];
-            if (!room) return;
+                const room = rooms[ws.room];
+                if (!room) return;
 
-            // Check if card is taken IN THIS ROOM
-            const isTaken = Array.from(room.players).some(p => {
-                const pCard = (p.roomData && p.roomData[ws.room]) ? p.roomData[ws.room].cardNumber : p.cardNumber;
-                return pCard === data.cardNumber;
-            });
-            if (isTaken) {
-                return ws.send(JSON.stringify({ type: 'ERROR', message: 'ይህ ካርድ ተይዟል!' }));
-            }
-
-            // Deduct balance from DB
-            try {
-                const stake = room.stake;
-                const user = await db.query('SELECT balance FROM users WHERE id = $1', [ws.userId]);
-                if (user.rows[0].balance < stake) {
-                    return ws.send(JSON.stringify({ type: 'ERROR', message: 'በቂ ባላንስ የልዎትም!' }));
+                // Check if card is taken IN THIS ROOM
+                if (room.takenCards.has(data.cardNumber)) {
+                    return ws.send(JSON.stringify({ type: 'ERROR', message: 'ይህ ካርድ ተይዟል!' }));
                 }
 
-                await db.query('UPDATE users SET balance = balance - $1 WHERE id = $2', [stake, ws.userId]);
-                const updatedUser = await db.query('SELECT balance FROM users WHERE id = $1', [ws.userId]);
-                
-                // Log history
-                await db.query(
-                    'INSERT INTO balance_history (user_id, type, amount, balance_after, description) VALUES ($1, $2, $3, $4, $5)',
-                    [ws.userId, 'stake', -stake, updatedUser.rows[0].balance, `Game Stake (Room ${ws.room})`]
-                );
+                // Deduct balance from DB
+                try {
+                    const stake = room.stake;
+                    const user = await db.query('SELECT balance FROM users WHERE id = $1', [ws.userId]);
+                    if (user.rows[0].balance < stake) {
+                        return ws.send(JSON.stringify({ type: 'ERROR', message: 'በቂ ባላንስ የልዎትም!' }));
+                    }
 
-                // Notify client of new balance
-                ws.send(JSON.stringify({ 
-                    type: 'BALANCE_UPDATE', 
-                    balance: updatedUser.rows[0].balance 
-                }));
+                    await db.query('UPDATE users SET balance = balance - $1 WHERE id = $2', [stake, ws.userId]);
+                    const updatedUser = await db.query('SELECT balance FROM users WHERE id = $1', [ws.userId]);
+                    
+                    // Log history
+                    await db.query(
+                        'INSERT INTO balance_history (user_id, type, amount, balance_after, description) VALUES ($1, $2, $3, $4, $5)',
+                        [ws.userId, 'stake', -stake, updatedUser.rows[0].balance, `Game Stake (Room ${ws.room})`]
+                    );
 
-                // Store card data per room on the connection object
-                if (!ws.roomData) ws.roomData = {};
-                ws.roomData[ws.room] = {
-                    cardNumber: data.cardNumber,
-                    cardData: data.cardData
-                };
-                
-                // For backward compatibility/simplicity in broadcasting
-                ws.cardNumber = data.cardNumber;
-                ws.cardData = data.cardData;
+                    // Notify client of new balance
+                    ws.send(JSON.stringify({ 
+                        type: 'BALANCE_UPDATE', 
+                        balance: updatedUser.rows[0].balance 
+                    }));
 
-                console.log(`Room ${ws.room}: Card ${data.cardNumber} bought by User ${ws.userId}`);
-                updateGlobalStats();
-            } catch (err) {
-                console.error('Buy Card Error:', err);
-                ws.send(JSON.stringify({ type: 'ERROR', message: 'የካርድ ግዢ አልተሳካም!' }));
+                    // Store card data per room on the connection object
+                    if (!ws.roomData) ws.roomData = {};
+                    ws.roomData[ws.room] = {
+                        cardNumber: data.cardNumber,
+                        cardData: data.cardData
+                    };
+                    
+                    // Add to room's taken cards
+                    room.takenCards.add(data.cardNumber);
+
+                    // For backward compatibility/simplicity in broadcasting
+                    ws.cardNumber = data.cardNumber;
+                    ws.cardData = data.cardData;
+
+                    console.log(`Room ${ws.room}: Card ${data.cardNumber} bought by User ${ws.userId}`);
+                    
+                    broadcastToRoom(ws.room, {
+                        type: 'CARD_TAKEN',
+                        room: ws.room,
+                        takenCards: Array.from(room.takenCards)
+                    });
+                    
+                    updateGlobalStats();
+                } catch (err) {
+                    console.error('Buy Card Error:', err);
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'የካርድ ግዢ አልተሳካም!' }));
+                }
             }
-        }
     });
 
     ws.on('close', () => {

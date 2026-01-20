@@ -220,6 +220,11 @@ socket.onmessage = (event) => {
         }
     } else if (data.type === 'ERROR') {
         showToast(data.message);
+    } else if (data.type === 'CARD_TAKEN') {
+        if (data.room == currentRoom) {
+            roomTakenCards = data.takenCards || [];
+            createAvailableCards();
+        }
     } else if (data.type === 'ROOM_STATS') {
         if (data.takenCards && data.takenCards[currentRoom]) {
             roomTakenCards = data.takenCards[currentRoom];
