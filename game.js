@@ -355,7 +355,7 @@ function buyCard() {
         socket.send(JSON.stringify({
             type: 'BUY_CARD',
             room: currentRoom,
-            cardId: state.currentSelectedCard
+            cardNumber: state.currentSelectedCard
         }));
         state.myGameCard = state.currentCardData;
         closeCardModal();

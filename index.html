@@ -379,6 +379,20 @@
                 </div>
             </div>
 
+            <!-- Card Selection Modal -->
+            <div id="card-modal" class="winner-modal">
+                <div class="winner-content" style="max-width: 320px; padding: 25px;">
+                    <h3 style="color: white; margin-top: 0;">Board #<span id="selected-card-number">0</span></h3>
+                    <div id="card-preview-container" class="bingo-card" style="margin: 15px auto; pointer-events: none;">
+                        <!-- Preview cells injected by JS -->
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="modal-close-btn" onclick="closeCardModal()" style="background: #374151; color: white; flex: 1; margin-top: 0;">Close</button>
+                        <button class="modal-close-btn" onclick="buyCard()" style="flex: 2; margin-top: 0;">Buy Board</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Game Screen -->
             <div id="game-screen" class="game-screen">
                 <header>
