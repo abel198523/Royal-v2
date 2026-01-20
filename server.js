@@ -861,20 +861,22 @@ wss.on('connection', (ws) => {
                     };
                     
                     // Add to room's taken cards
-                    room.takenCards.add(Number(data.cardNumber));
+                    const cardNum = Number(data.cardNumber);
+                    room.takenCards.add(cardNum);
 
                     // For backward compatibility/simplicity in broadcasting
-                    ws.cardNumber = Number(data.cardNumber);
+                    ws.cardNumber = cardNum;
                     ws.cardData = data.cardData;
 
-                    console.log(`Room ${ws.room}: Card ${data.cardNumber} bought by User ${ws.userId}`);
+                    console.log(`Room ${ws.room}: Card ${cardNum} bought by User ${ws.userId}`);
                     
+                    // Broadcast CARD_TAKEN to everyone in the room
                     broadcastToRoom(ws.room, {
                         type: 'CARD_TAKEN',
                         room: ws.room,
                         takenCards: Array.from(room.takenCards)
                     });
-                    
+
                     updateGlobalStats();
                 } catch (err) {
                     console.error('Buy Card Error:', err);

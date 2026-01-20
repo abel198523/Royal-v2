@@ -227,6 +227,7 @@ socket.onmessage = (event) => {
     } else if (data.type === 'CARD_TAKEN') {
         if (data.room == currentRoom) {
             roomTakenCards = data.takenCards || [];
+            console.log("Updated taken cards for room:", currentRoom, roomTakenCards);
             createAvailableCards();
         }
     } else if (data.type === 'ROOM_STATS') {
