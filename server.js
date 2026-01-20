@@ -34,12 +34,23 @@ STAKES.forEach(amount => {
 let pendingOTP = {}; // Store temporary signup data
 
 app.post('/api/signup-request', async (req, res) => {
-    const { telegram_chat_id } = req.body;
+    const { telegram_chat_id, username } = req.body;
     if (!telegram_chat_id) return res.status(400).json({ error: "የቴሌግራም Chat ID ያስገቡ" });
+    if (!username) return res.status(400).json({ error: "የተጠቃሚ ስም ያስገቡ" });
 
     try {
-        const otp = Math.floor(1000 + Math.random() * 9000).toString();
-        pendingOTP[telegram_chat_id] = { otp, timestamp: Date.now() };
+        // Check if username or telegram_chat_id already exists
+        const checkUser = await db.query('SELECT id FROM users WHERE username = $1 OR telegram_chat_id = $2', [username, telegram_chat_id]);
+        if (checkUser.rows.length > 0) {
+            return res.status(400).json({ error: "ይህ ተጠቃሚ ስም ወይም የቴሌግራም አይዲ ቀድሞ ተመዝግቧል" });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
+        pendingOTP[telegram_chat_id] = { 
+            otp, 
+            username,
+            timestamp: Date.now() 
+        };
         
         // Send OTP via Telegram
         const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -57,31 +68,55 @@ app.post('/api/signup-request', async (req, res) => {
         
         res.json({ message: "የማረጋገጫ ኮድ በቴሌግራም ተልኳል።" });
     } catch (err) {
+        console.error('Signup Request Error:', err);
         res.status(500).json({ error: "የሰርቨር ስህተት አጋጥሟል" });
     }
 });
 
 app.post('/api/signup-verify', async (req, res) => {
-    const { telegram_chat_id, password, name, phone, otp } = req.body;
+    const { telegram_chat_id, password, otp } = req.body;
     try {
         const record = pendingOTP[telegram_chat_id];
         if (!record || record.otp !== otp) {
             return res.status(400).json({ error: "የተሳሳተ የኦቲፒ ኮድ" });
         }
 
+        // OTP expires in 5 minutes
+        if (Date.now() - record.timestamp > 5 * 60 * 1000) {
+            delete pendingOTP[telegram_chat_id];
+            return res.status(400).json({ error: "የኦቲፒ ኮድ ጊዜው አልፏል" });
+        }
+
+        const username = record.username;
         delete pendingOTP[telegram_chat_id];
 
         const hash = await bcrypt.hash(password, 10);
         const playerId = 'PL' + Math.floor(1000 + Math.random() * 9000);
         
-        // Use telegram_chat_id as phone if phone is not provided
-        const finalPhone = phone || telegram_chat_id;
-
         const result = await db.query(
-            'INSERT INTO users (phone_number, password_hash, username, name, balance, player_id, telegram_chat_id) VALUES ($1, $2, $3, $4, 0, $5, $6) RETURNING *',
-            [finalPhone, hash, finalPhone, name, playerId, telegram_chat_id]
+            'INSERT INTO users (username, password_hash, balance, player_id, telegram_chat_id, phone_number) VALUES ($1, $2, 0, $3, $4, $5) ON CONFLICT (telegram_chat_id) DO NOTHING RETURNING *',
+            [username, hash, playerId, telegram_chat_id, username]
         );
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({ error: "ምዝገባው አልተሳካም (የቴሌግራም አይዲ ቀድሞ ተመዝግቧል)" });
+        }
+
         const user = result.rows[0];
+
+        // Send Success Message via Telegram
+        const botToken = process.env.TELEGRAM_BOT_TOKEN;
+        const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+        const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+        await fetch(telegramUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: telegram_chat_id,
+                text: "ምዝገባዎ ተሳክቷል! እንኳን ደህና መጡ።"
+            })
+        });
+
         const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin }, SECRET_KEY);
         res.json({ token, username: user.username, balance: user.balance, name: user.name, player_id: user.player_id, is_admin: user.is_admin });
     } catch (err) {
