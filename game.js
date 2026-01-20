@@ -412,6 +412,7 @@ function renderStakes() {
             </div>
             <div class="stake-meta">
                 <div class="stake-prize" id="stake-prize-${amount}">Prize: 0.00 ETB</div>
+                <button class="join-room-btn">Join</button>
                 <div class="stake-timer" id="stake-timer-${amount}">⏰ 30</div>
             </div>
         `;
