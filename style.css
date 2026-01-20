@@ -259,14 +259,31 @@
 
 .welcome-subtitle {
     font-size: 1.5rem;
+    color: var(--text-white);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.welcome-instruction {
+    font-size: 1.1rem;
     color: var(--text-muted);
-    margin-bottom: 3rem;
-    font-weight: 500;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.welcome-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
 }
 
 .welcome-btn {
     padding: 15px 50px;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: bold;
     color: white;
     background: linear-gradient(135deg, #3b82f6, #2563eb);
@@ -275,11 +292,26 @@
     cursor: pointer;
     box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
     transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 250px;
+}
+
+.welcome-btn.telegram-btn {
+    background: linear-gradient(135deg, #0088cc, #0077b5);
+    box-shadow: 0 10px 20px rgba(0, 136, 204, 0.3);
 }
 
 .welcome-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 15px 25px rgba(37, 99, 235, 0.4);
+}
+
+.welcome-btn.telegram-btn:hover {
+    box-shadow: 0 15px 25px rgba(0, 136, 204, 0.4);
 }
 
 .welcome-btn:active {

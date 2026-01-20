@@ -563,9 +563,23 @@ function startApp() {
     const welcome = document.getElementById('welcome-screen');
     const auth = document.getElementById('auth-screen');
     if (welcome) welcome.classList.remove('active');
-    if (auth) auth.classList.add('active');
+    if (auth) {
+        auth.classList.add('active');
+        showLogin();
+    }
+}
+
+function startAppWithSignup() {
+    const welcome = document.getElementById('welcome-screen');
+    const auth = document.getElementById('auth-screen');
+    if (welcome) welcome.classList.remove('active');
+    if (auth) {
+        auth.classList.add('active');
+        showSignup();
+    }
 }
 window.startApp = startApp;
+window.startAppWithSignup = startAppWithSignup;
 
 const doLoginBtn = document.getElementById('do-login');
 if (doLoginBtn) {
