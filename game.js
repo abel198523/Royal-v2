@@ -131,7 +131,7 @@ function createAvailableCards() {
     for (let i = 1; i <= 100; i++) {
         const card = document.createElement('div');
         card.className = 'card-item';
-        if (roomTakenCards.includes(i)) card.classList.add('taken');
+        if (roomTakenCards.map(Number).includes(i)) card.classList.add('taken');
         card.innerText = i;
         
         card.onclick = () => {

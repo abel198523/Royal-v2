@@ -804,21 +804,17 @@ wss.on('connection', (ws) => {
                     ws.cardData = null;
                 }
                 
-                // Also get taken cards for this specific room
-                const roomTaken = [];
-                room.players.forEach(p => {
-                    const pCard = (p.roomData && p.roomData[ws.room]) ? p.roomData[ws.room].cardNumber : p.cardNumber;
-                    if (pCard) roomTaken.push(pCard);
-                });
-                
-                ws.send(JSON.stringify({ 
-                    type: 'INIT', 
-                    history: room.drawnBalls,
-                    countdown: room.gameCountdown,
-                    room: ws.room,
-                    takenCards: roomTaken,
-                    isGameRunning: room.gameInterval !== null
-                }));
+            // Also get taken cards for this specific room
+            const roomTaken = Array.from(room.takenCards);
+            
+            ws.send(JSON.stringify({ 
+                type: 'INIT', 
+                history: room.drawnBalls,
+                countdown: room.gameCountdown,
+                room: ws.room,
+                takenCards: roomTaken,
+                isGameRunning: room.gameInterval !== null
+            }));
                 updateGlobalStats();
             }
         }
@@ -865,10 +861,10 @@ wss.on('connection', (ws) => {
                     };
                     
                     // Add to room's taken cards
-                    room.takenCards.add(data.cardNumber);
+                    room.takenCards.add(Number(data.cardNumber));
 
                     // For backward compatibility/simplicity in broadcasting
-                    ws.cardNumber = data.cardNumber;
+                    ws.cardNumber = Number(data.cardNumber);
                     ws.cardData = data.cardData;
 
                     console.log(`Room ${ws.room}: Card ${data.cardNumber} bought by User ${ws.userId}`);
