@@ -3,7 +3,7 @@ import telebot
 from telebot import types
 import psycopg2
 from dotenv import load_dotenv
-import bcrypt
+import random
 
 load_dotenv()
 
@@ -12,43 +12,44 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 
 bot = telebot.TeleBot(TOKEN, threaded=False)
 
-# Store user state temporarily (In production, use Redis or a DB table)
-user_states = {}
-
 def get_db_connection():
     return psycopg2.connect(DATABASE_URL)
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
-    button = types.KeyboardButton("Share Contact to Register", request_contact=True)
-    markup.add(button)
+    chat_id = str(message.chat.id)
     
-    bot.send_message(
-        message.chat.id, 
-        "እንኳን ወደ Fidel Bingo በሰላም መጡ! ለመመዝገብ እባክዎ ከታች ያለውን 'Share Contact to Register' የሚለውን ቁልፍ ይጫኑ።", 
-        reply_markup=markup
+    # Send Chat ID immediately
+    msg = (
+        "እንኳን ወደ Fidel Bingo በሰላም መጡ!\n\n"
+        f"የእርስዎ ቻት አይዲ (Chat ID)፡ `{chat_id}` 👈\n\n"
+        "እባክዎ ይህንን ኮፒ አድርገው አፑ ላይ ይመዝገቡ።"
     )
+    
+    markup = types.InlineKeyboardMarkup()
+    web_button = types.InlineKeyboardButton("ዌብሳይት ለመክፈት ይጫኑ (Open Website)", url="https://7b483841-159f-431f-b19b-e1a538bf7de9-00-2vo9ydcrpkapq.picard.replit.dev/")
+    markup.add(web_button)
+    
+    bot.send_message(message.chat.id, msg, parse_mode='Markdown', reply_markup=markup)
 
-@bot.message_handler(content_types=['contact'])
-def handle_contact(message):
-    if message.contact is not None:
-        chat_id = str(message.chat.id)
+@bot.message_handler(commands=['otp'])
+def send_otp(message):
+    chat_id = str(message.chat.id)
+    otp = str(random.randint(100000, 999999))
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        # Update OTP for the user with this chat_id
+        cur.execute("UPDATE users SET otp = %s WHERE telegram_chat_id = %s", (otp, chat_id))
+        conn.commit()
+        cur.close()
+        conn.close()
         
-        # Create inline keyboard for the website link
-        markup = types.InlineKeyboardMarkup()
-        web_button = types.InlineKeyboardButton("ዌብሳይት ለመክፈት ይጫኑ (Open Website)", url="https://f8f3f826-54e0-4041-b327-2bc772ec9452-00-1qr0kb4ib98ue.worf.replit.dev")
-        markup.add(web_button)
-        
-        bot.send_message(
-            message.chat.id, 
-            f"የእርስዎ ቻት አይዲ (Chat ID)፡ `{chat_id}` 👈\n\nእባክዎ ይህንን ኮፒ አድርገው አፑ ላይ ይመዝገቡ።",
-            parse_mode='Markdown',
-            reply_markup=markup
-        )
-
-# Remove unused password step logic if you want to keep the file clean
-# But for now, we'll just leave it and only the contact handler is active.
+        bot.send_message(message.chat.id, f"የእርስዎ የማረጋገጫ ኮድ (OTP)፡ `{otp}`", parse_mode='Markdown')
+    except Exception as e:
+        print(f"Error sending OTP: {e}")
+        bot.send_message(message.chat.id, "ይቅርታ፣ ስህተት ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።")
 
 if __name__ == "__main__":
     print("Bot is starting...")
