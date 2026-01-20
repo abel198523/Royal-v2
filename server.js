@@ -126,12 +126,12 @@ app.post('/api/signup-verify', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-    const { phone, password } = req.body;
+    const { username, password } = req.body;
     try {
-        const result = await db.query('SELECT * FROM users WHERE phone_number = $1', [phone]);
+        const result = await db.query('SELECT * FROM users WHERE username = $1 OR phone_number = $1 OR telegram_chat_id = $1', [username]);
         if (result.rows.length === 0) return res.status(404).json({ error: "ተጠቃሚው አልተገኘም" });
         const isMatch = await bcrypt.compare(password, result.rows[0].password_hash);
-        if (!isMatch) return res.status(401).json({ error: "ስህተት" });
+        if (!isMatch) return res.status(401).json({ error: "የተሳሳተ ፓስወርድ" });
         
         const user = result.rows[0];
         const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin }, SECRET_KEY);
@@ -141,9 +141,16 @@ app.post('/api/login', async (req, res) => {
             balance: user.balance,
             name: user.name,
             player_id: user.player_id,
-            is_admin: user.is_admin
+            is_admin: user.is_admin,
+            user: {
+                username: user.username,
+                balance: user.balance
+            }
         });
-    } catch (err) { res.status(500).send(err); }
+    } catch (err) { 
+        console.error('Login Error:', err);
+        res.status(500).json({ error: "የሰርቨር ስህተት" }); 
+    }
 });
 
 // Middleware to check if user is admin

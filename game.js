@@ -450,11 +450,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('do-login');
     if (loginBtn) {
         loginBtn.addEventListener('click', async () => {
-            const phone = document.getElementById('login-phone').value;
+            const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-pass').value;
 
-            if (!phone || !password) {
-                showToast('እባክዎ ስልክ እና ፓስወርድ ያስገቡ።');
+            if (!username || !password) {
+                showToast('እባክዎ የተጠቃሚ ስም እና ፓስወርድ ያስገቡ።');
                 return;
             }
 
@@ -462,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone, password })
+                    body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
                 if (res.ok) {
@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('እንኳን በደህና መጡ!');
                     navTo('stake');
                 } else {
-                    showToast(data.error || 'የተሳሳተ ስልክ ወይም ፓስወርድ።');
+                    showToast(data.error || 'የተሳሳተ የተጠቃሚ ስም ወይም ፓስወርድ።');
                 }
             } catch (e) {
                 showToast('ከሰርቨር ጋር መገናኘት አልተቻለም።');
