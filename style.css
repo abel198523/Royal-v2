@@ -1317,10 +1317,12 @@ body {
 }
 
 .card-item.taken {
-    background: #421c21;
-    color: #f87171;
+    background-color: #ef4444 !important;
+    color: white !important;
+    border: 2px solid #dc2626 !important;
     cursor: not-allowed;
-    opacity: 0.6;
+    opacity: 1 !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
 }
 
 /* Preview Overlay Styles */

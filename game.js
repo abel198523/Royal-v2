@@ -119,8 +119,10 @@ function createAvailableCards() {
     if (!cardsGrid) return;
     cardsGrid.innerHTML = '';
     
-    const availableCount = 100 - roomTakenCards.length;
-    const takenCount = roomTakenCards.length;
+    // Ensure we are working with numbers
+    const takenNumbers = roomTakenCards.map(Number);
+    const availableCount = 100 - takenNumbers.length;
+    const takenCount = takenNumbers.length;
     
     const legendAvailable = document.querySelector('.legend-item:nth-child(1)');
     const legendTaken = document.querySelector('.legend-item:nth-child(2)');
@@ -131,7 +133,9 @@ function createAvailableCards() {
     for (let i = 1; i <= 100; i++) {
         const card = document.createElement('div');
         card.className = 'card-item';
-        if (roomTakenCards.map(Number).includes(i)) card.classList.add('taken');
+        if (takenNumbers.includes(i)) {
+            card.classList.add('taken');
+        }
         card.innerText = i;
         
         card.onclick = () => {
