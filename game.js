@@ -101,11 +101,17 @@ function updateCountdown(seconds) {
 
 const STAKES = [5, 10, 20, 30, 40, 50, 100, 200, 500];
 
-const staticCards = [{"id":1,"data":{"B":[7,10,13,14,15],"I":[18,21,23,29,30],"N":[35,36,"FREE",40,43],"G":[46,47,48,49,56],"O":[65,67,69,70,75]}},{"id":2,"data":{"B":[2,7,11,14,15],"I":[16,18,20,21,25],"N":[31,32,"FREE",39,43],"G":[50,53,56,58,60],"O":[63,66,72,73,74]}},{"id":3,"data":{"B":[2,4,12,13,14],"I":[16,22,24,29,30],"N":[32,33,"FREE",44,45],"G":[47,52,56,59,60],"O":[61,62,64,66,68]}},{"id":4,"data":{"B":[3,6,7,10,13],"I":[16,21,24,26,30],"N":[32,33,"FREE",36,41],"G":[46,48,52,54,59],"O":[63,65,66,72,75]}},{"id":5,"data":{"B":[1,4,7,12,15],"I":[17,19,26,29,30],"N":[31,32,"FREE",36,37],"G":[46,51,52,54,58],"O":[64,68,71,73,74]}},{"id":6,"data":{"B":[3,4,5,6,10],"I":[18,20,25,26,27],"N":[32,34,"FREE",41,45],"G":[48,50,51,53,54],"O":[62,63,65,67,75]}},{"id":7,"data":{"B":[1,2,4,5,6],"I":[17,21,24,27,30],"N":[31,33,"FREE",42,45],"G":[48,49,50,56,57],"O":[67,68,71,73,74]}},{"id":8,"data":{"B":[1,6,7,9,12],"I":[17,19,21,27,28],"N":[31,40,"FREE",42,43],"G":[47,49,50,51,57],"O":[64,65,66,70,74]}},{"id":9,"data":{"B":[3,6,9,12,14],"I":[16,17,20,22,27],"N":[31,37,"FREE",39,40],"G":[49,54,55,57,59],"O":[63,67,69,70,74]}},{"id":10,"data":{"B":[1,5,9,10,15],"I":[23,24,27,29,30],"N":[35,39,"FREE",43,45],"G":[47,52,56,58,59],"O":[62,63,64,67,71]}},{"id":11,"data":{"B":[1,2,6,12,14],"I":[16,18,21,28,30],"N":[31,37,"FREE",41,45],"G":[46,52,54,55,56],"O":[63,68,71,72,73]}},{"id":12,"data":{"B":[1,6,7,12,14],"I":[16,17,18,21,29],"N":[31,33,"FREE",43,45],"G":[46,54,55,56,59],"O":[62,63,65,69,70]}},{"id":13,"data":{"B":[1,6,8,11,15],"I":[16,19,20,22,30],"N":[35,38,"FREE",41,42],"G":[48,51,53,56,58],"O":[68,69,70,73,75]}},{"id":14,"data":{"B":[2,9,11,14,15],"I":[16,21,22,25,29],"N":[35,38,"FREE",41,45],"G":[46,51,52,54,57],"O":[66,67,69,72,75]}},{"id":15,"data":{"B":[5,7,11,12,14],"I":[18,19,22,25,26],"N":[33,41,"FREE",44,45],"G":[46,51,53,54,55],"O":[63,67,70,73,74]}},{"id":16,"data":{"B":[1,7,8,14,15],"I":[17,19,25,27,30],"N":[32,37,"FREE",42,44],"G":[50,52,55,56,58],"O":[61,62,65,69,70]}];
+let staticCards = [];
+fetch('cards.json')
+    .then(r => r.json())
+    .then(data => {
+        staticCards = data;
+    })
+    .catch(err => console.error('Error loading cards:', err));
 
 function getCardById(id) {
     const found = staticCards.find(c => c.id === id);
-    return found ? found.data : staticCards[0].data;
+    return found ? found.data : (staticCards[0] ? staticCards[0].data : null);
 }
 
 function createAvailableCards() {
@@ -223,42 +229,70 @@ socket.onmessage = (event) => {
         if (currentRoom && data.timers[currentRoom] !== undefined) {
             updateCountdown(data.timers[currentRoom]);
         }
-    } else if (data.type === 'BALANCE_UPDATE') {
-        userBalance = data.balance;
-        const balanceEl = document.getElementById('sel-balance');
-        const walletBalanceEl = document.getElementById('wallet-balance-value');
-        if (balanceEl) balanceEl.innerText = userBalance.toFixed(2);
-        if (walletBalanceEl) walletBalanceEl.innerText = userBalance.toFixed(2);
     }
 };
 
-const bingoBtn = document.getElementById('bingo-btn');
-if (bingoBtn) {
-    bingoBtn.onclick = () => {
-        const state = getRoomState(currentRoom);
-        if (!state.myGameCard || !currentRoom) return;
-        socket.send(JSON.stringify({
-            type: 'BINGO_CLAIM',
-            room: currentRoom,
-            cardNumber: state.currentSelectedCard
-        }));
-        bingoBtn.style.transform = 'scale(0.95)';
-        setTimeout(() => bingoBtn.style.transform = 'scale(1)', 100);
-    };
-}
-
 function startGame() {
-    const screens = ['selection-screen', 'stake-screen', 'profile-screen', 'wallet-screen', 'game-screen'];
+    const screens = ['stake-screen', 'selection-screen', 'profile-screen', 'wallet-screen'];
     screens.forEach(s => {
         const el = document.getElementById(s);
         if (el) el.classList.remove('active');
     });
-    const gameScreen = document.getElementById('game-screen');
-    if (gameScreen) gameScreen.classList.add('active');
-    renderMyGameCard();
+    document.getElementById('game-screen').classList.add('active');
+    createBingoNumbers();
+    const state = getRoomState(currentRoom);
+    if (state.myGameCard) {
+        displayCard(state.myGameCard);
+    }
+    if (state.lastHistory) {
+        updateGameUI(state.lastHistory);
+    }
 }
 
-function getBallLetter(num) {
+function updateGameUI(history) {
+    if (!history) return;
+    
+    document.querySelectorAll('.bingo-cell').forEach(c => c.classList.remove('active'));
+    
+    history.forEach(num => {
+        const cell = document.getElementById(`num-${num}`);
+        if (cell) cell.classList.add('active');
+    });
+
+    if (history.length > 0) {
+        const lastNum = history[history.length - 1];
+        const letter = getBingoLetter(lastNum);
+        activeBall.innerText = `${letter}${lastNum}`;
+        activeBall.style.backgroundColor = colors[letter];
+        activeBall.classList.remove('pop');
+        void activeBall.offsetWidth;
+        activeBall.classList.add('pop');
+    }
+
+    recentBalls.innerHTML = '';
+    const recent = [...history].reverse().slice(1, 6);
+    recent.forEach(num => {
+        const letter = getBingoLetter(num);
+        const ball = document.createElement('div');
+        ball.className = 'ball-small';
+        ball.innerText = num;
+        ball.style.borderColor = colors[letter];
+        ball.style.color = colors[letter];
+        recentBalls.appendChild(ball);
+    });
+
+    callCount.innerText = history.length;
+    const progress = (history.length / 75) * 100;
+    progressBar.style.width = `${progress}%`;
+    progressText.innerText = `${history.length}/75`;
+
+    const state = getRoomState(currentRoom);
+    if (state.myGameCard) {
+        updateCardHighlights(state.myGameCard, history);
+    }
+}
+
+function getBingoLetter(num) {
     if (num <= 15) return 'B';
     if (num <= 30) return 'I';
     if (num <= 45) return 'N';
@@ -266,470 +300,154 @@ function getBallLetter(num) {
     return 'O';
 }
 
-let autoMarking = true;
-const autoToggle = document.getElementById('auto-toggle');
-if (autoToggle) {
-    autoToggle.classList.add('active');
-    autoToggle.onclick = () => {
-        autoMarking = !autoMarking;
-        autoToggle.classList.toggle('active', autoMarking);
-    };
+function selectRoom(amount) {
+    currentRoom = amount;
+    socket.send(JSON.stringify({ type: 'JOIN_ROOM', room: amount }));
+    document.getElementById('stake-screen').classList.remove('active');
+    document.getElementById('selection-screen').classList.add('active');
 }
 
-function renderMyGameCard() {
-    const bingoBoard = document.getElementById('bingo-board');
+function showCardPreview(cardId) {
     const state = getRoomState(currentRoom);
-    if (!bingoBoard || !state.myGameCard) return;
-    bingoBoard.innerHTML = '';
-    const cardLabel = document.getElementById('my-card-label');
-    if (cardLabel && state.currentSelectedCard) cardLabel.innerText = `የእርስዎ ካርድ #${state.currentSelectedCard}`;
-    const cardData = JSON.parse(JSON.stringify(state.myGameCard));
-    cardData['N'][2] = 'FREE';
+    state.currentSelectedCard = cardId;
+    const cardData = getCardById(cardId);
+    state.currentCardData = cardData;
+    
+    const previewContainer = document.getElementById('card-preview-container');
+    previewContainer.innerHTML = '';
+    
     const letters = ['B', 'I', 'N', 'G', 'O'];
-    letters.forEach(l => {
-        const header = document.createElement('div');
-        header.className = 'bingo-cell card-header-cell';
-        header.innerText = l;
-        bingoBoard.appendChild(header);
-    });
     for (let row = 0; row < 5; row++) {
         letters.forEach(l => {
             const val = cardData[l][row];
             const cell = document.createElement('div');
-            cell.className = 'bingo-cell';
-            if (val === 'FREE') {
-                cell.classList.add('free-spot', 'called');
-                cell.innerText = 'FREE';
-            } else {
-                cell.id = `cell-${val}`;
-                cell.innerText = val;
-                cell.onclick = () => { if (!autoMarking) cell.classList.toggle('called'); };
-            }
-            bingoBoard.appendChild(cell);
+            cell.className = 'preview-cell';
+            cell.innerText = val === 'FREE' ? '★' : val;
+            if (val === 'FREE') cell.classList.add('free');
+            previewContainer.appendChild(cell);
         });
     }
+    
+    document.getElementById('selected-card-number').innerText = cardId;
+    document.getElementById('card-modal').classList.add('active');
 }
 
-function updateGameUI(history) {
+function closeCardModal() {
+    document.getElementById('card-modal').classList.remove('active');
+}
+
+function buyCard() {
     const state = getRoomState(currentRoom);
-    state.lastHistory = history;
-    const counts = { B: 0, I: 0, N: 0, G: 0, O: 0 };
-    history.forEach(n => { counts[getBallLetter(n)]++; });
-    Object.keys(counts).forEach(l => {
-        const el = document.querySelector(`.h-${l}`);
-        if (el) el.setAttribute('data-count', counts[l]);
-    });
-    const masterGrid = document.getElementById('master-grid');
-    if (masterGrid) {
-        masterGrid.innerHTML = '';
-        for (let row = 0; row < 15; row++) {
-            for (let col = 0; col < 5; col++) {
-                const num = (col * 15) + row + 1;
-                const cell = document.createElement('div');
-                cell.className = 'master-cell';
-                cell.innerText = num;
-                if (history.includes(num)) {
-                    cell.classList.add('called');
-                    if (num === history[history.length - 1]) cell.classList.add('last-called');
-                }
-                masterGrid.appendChild(cell);
-            }
-        }
+    if (state.currentSelectedCard) {
+        socket.send(JSON.stringify({
+            type: 'BUY_CARD',
+            room: currentRoom,
+            cardId: state.currentSelectedCard
+        }));
+        state.myGameCard = state.currentCardData;
+        closeCardModal();
+        showToast(`Card #${state.currentSelectedCard} purchased!`);
     }
-    if (history.length === 0) {
-        activeBall.innerHTML = '<span>--</span>';
-        recentBalls.innerHTML = '';
-        if (state.myGameCard) renderMyGameCard();
-        return;
-    }
-    const lastBall = history[history.length - 1];
-    const letter = getBallLetter(lastBall);
-    activeBall.innerHTML = `<span>${letter}${lastBall}</span>`;
-    if (autoMarking) {
-        history.forEach(num => {
-            const el = document.getElementById(`cell-${num}`);
-            if (el) el.classList.add('called');
-        });
-    }
-    const callsEl = document.getElementById('call-count');
-    if (callsEl) callsEl.innerText = history.length;
-    progressText.innerText = `${history.length}/75`;
-    progressBar.style.width = `${(history.length / 75) * 100}%`;
-    const recent = history.slice(-4, -1).reverse();
-    recentBalls.innerHTML = recent.map(n => {
-        const l = getBallLetter(n);
-        return `<div class="hist-ball" style="background: ${colors[l]}">${l}${n}</div>`;
-    }).join('');
 }
 
-const previewOverlay = document.getElementById('preview-overlay');
-const modalCardContent = document.getElementById('modal-card-content');
-const previewCardNumber = document.getElementById('preview-card-number');
-const closePreview = document.getElementById('close-preview');
-const rejectCard = document.getElementById('reject-card');
-const confirmCard = document.getElementById('confirm-card');
-
-function showCardPreview(num) {
-    if (userBalance < currentRoom) {
-        alert("በቂ ባላንስ የልዎትም፤ እባክዎን ዲፖዚት ያድርጉ።");
-        return;
-    }
-    const state = getRoomState(currentRoom);
-    state.currentSelectedCard = num;
-    state.currentCardData = getCardById(num);
-    previewCardNumber.innerText = `Card #${num}`;
-    modalCardContent.innerHTML = '';
-    modalCardContent.appendChild(createCardPreview(state.currentCardData));
-    previewOverlay.classList.add('active');
-}
-
-function createCardPreview(cardData) {
-    const container = document.createElement('div');
-    container.className = 'card-preview';
+function displayCard(cardData) {
+    const cardGrid = document.getElementById('game-card-grid');
+    cardGrid.innerHTML = '';
     const letters = ['B', 'I', 'N', 'G', 'O'];
-    letters.forEach(l => {
-        const header = document.createElement('div');
-        header.className = 'preview-header';
-        header.innerText = l;
-        container.appendChild(header);
-    });
+    
     for (let row = 0; row < 5; row++) {
         letters.forEach(l => {
+            const val = cardData[l][row];
             const cell = document.createElement('div');
-            cell.className = 'preview-cell';
-            if (cardData[l][row] === 'FREE') cell.classList.add('free-spot');
-            cell.innerText = cardData[l][row];
-            container.appendChild(cell);
+            cell.className = 'game-cell';
+            cell.id = `card-cell-${val}`;
+            cell.innerText = val === 'FREE' ? '★' : val;
+            if (val === 'FREE') cell.classList.add('marked');
+            cardGrid.appendChild(cell);
         });
     }
-    return container;
 }
 
-closePreview.onclick = () => {
-    previewOverlay.classList.remove('active');
-    const state = getRoomState(currentRoom);
-    state.currentSelectedCard = null;
-    state.currentCardData = null;
-};
-
-rejectCard.onclick = () => {
-    previewOverlay.classList.remove('active');
-    const state = getRoomState(currentRoom);
-    state.currentSelectedCard = null;
-    state.currentCardData = null;
-};
-
-confirmCard.onclick = () => {
-    const state = getRoomState(currentRoom);
-    if (!state.currentSelectedCard || !state.currentCardData) return;
-    state.myGameCard = state.currentCardData;
-    socket.send(JSON.stringify({ 
-        type: 'BUY_CARD', 
-        room: currentRoom,
-        cardNumber: state.currentSelectedCard, 
-        cardData: state.currentCardData 
-    }));
-    const myBoardLabel = document.getElementById('sel-my-board');
-    if (myBoardLabel) myBoardLabel.innerText = `#${state.currentSelectedCard}`;
-    previewOverlay.classList.remove('active');
-};
-
-function createStakeList() {
-    const list = document.getElementById('stake-list');
-    if (!list) return;
-    list.innerHTML = '';
-    STAKES.forEach(amount => {
-        const row = document.createElement('div');
-        row.className = 'stake-row';
-        row.innerHTML = `
-            <div class="stake-amount">${amount} ETB</div>
-            <div class="stake-info">
-                <div class="stake-players" id="stake-count-${amount}">0 Players</div>
-                <div class="stake-timer" id="stake-timer-${amount}">⏰ 0:30</div>
-                <div class="stake-prize" id="stake-prize-${amount}" style="font-size: 0.85rem; color: #22c55e; font-weight: bold; display: none; margin-top: 4px;">Prize: 0.00 ETB</div>
-            </div>
-            <button class="join-btn" onclick="joinStake(${amount})">JOIN</button>
-        `;
-        list.appendChild(row);
+function updateCardHighlights(cardData, history) {
+    const letters = ['B', 'I', 'N', 'G', 'O'];
+    letters.forEach(l => {
+        cardData[l].forEach(val => {
+            if (val !== 'FREE' && history.includes(val)) {
+                const cell = document.getElementById(`card-cell-${val}`);
+                if (cell) cell.classList.add('marked');
+            }
+        });
     });
 }
 
-window.joinStake = (amount) => {
-    currentRoom = amount;
-    const token = localStorage.getItem('bingo_token');
-    socket.send(JSON.stringify({ type: 'JOIN_ROOM', room: amount, token: token }));
-    const stakeLabel = document.getElementById('sel-stake-amount');
-    if (stakeLabel) stakeLabel.innerText = `${amount} ETB`;
-    const screens = ['stake-screen', 'profile-screen', 'wallet-screen', 'game-screen'];
+// Simple Tab Switching
+function showScreen(screenId) {
+    const screens = ['stake-screen', 'selection-screen', 'game-screen', 'profile-screen', 'wallet-screen'];
     screens.forEach(s => {
         const el = document.getElementById(s);
         if (el) el.classList.remove('active');
     });
-    const selectionScreen = document.getElementById('selection-screen');
-    if (selectionScreen) selectionScreen.classList.add('active');
-    const mainContent = document.getElementById('main-content');
-    if (mainContent) mainContent.style.display = 'block';
-};
-
-function initApp() {
-    createBingoNumbers();
-    createStakeList();
-    createAvailableCards();
-
-    const menuTriggers = document.querySelectorAll('.menu-trigger');
-    const sideMenu = document.getElementById('side-menu');
-    const overlay = document.getElementById('menu-overlay');
-    const closeBtn = document.getElementById('close-menu');
-    const menuLogo = document.getElementById('menu-logo-trigger');
-
-    let clickCount = 0;
-    let lastClickTime = 0;
-
-    if (menuLogo) {
-        menuLogo.onclick = () => {
-            const now = Date.now();
-            if (now - lastClickTime > 2000) {
-                clickCount = 1;
-            } else {
-                clickCount++;
-            }
-            lastClickTime = now;
-
-            if (clickCount === 3) {
-                clickCount = 0;
-                promptAdminPassword();
-            }
-        };
-    }
-
-    menuTriggers.forEach(btn => {
-        btn.onclick = () => {
-            if (sideMenu) sideMenu.classList.add('active');
-            if (overlay) overlay.classList.add('active');
-        };
-    });
-
-    if (closeBtn) {
-        closeBtn.onclick = () => {
-            if (sideMenu) sideMenu.classList.remove('active');
-            if (overlay) overlay.classList.remove('active');
-        };
-    }
-
-    if (overlay) {
-        overlay.onclick = () => {
-            if (sideMenu) sideMenu.classList.remove('active');
-            if (overlay) overlay.classList.remove('active');
-        };
-    }
-}
-
-let userBalance = 0;
-
-function updateUserData(data) {
-    userBalance = parseFloat(data.balance);
-    const balanceEl = document.getElementById('sel-balance');
-    const walletBalanceEl = document.getElementById('wallet-balance-value');
-    const profilePhoneEl = document.getElementById('profile-phone-number');
-    const profileUserTop = document.getElementById('profile-username-top');
-    const stakeUserTop = document.getElementById('stake-username');
-    
-    if(balanceEl) balanceEl.innerText = userBalance.toFixed(2);
-    if(walletBalanceEl) walletBalanceEl.innerText = userBalance.toFixed(2);
-    if(profilePhoneEl) profilePhoneEl.innerText = data.phone_number || data.username;
-    if(profileUserTop) profileUserTop.innerText = data.name || data.username;
-    if(stakeUserTop) stakeUserTop.innerText = data.name || data.username;
-}
-
-function navTo(screenId) {
-    const screens = ['stake-screen', 'profile-screen', 'wallet-screen', 'game-screen', 'selection-screen', 'admin-screen'];
-    screens.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.classList.remove('active');
-    });
-    
-    const target = document.getElementById(`${screenId}-screen`);
+    const target = document.getElementById(screenId);
     if (target) target.classList.add('active');
     
-    const sideMenu = document.getElementById('side-menu');
-    const overlay = document.getElementById('menu-overlay');
-    if (sideMenu) sideMenu.classList.remove('active');
-    if (overlay) overlay.classList.remove('active');
+    if (screenId === 'profile-screen') updateProfile();
 }
 
-window.navTo = navTo;
+function updateProfile() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    document.getElementById('prof-username').innerText = user.username || 'Guest';
+    document.getElementById('prof-balance').innerText = `${user.balance || 0} ETB`;
+}
 
-function startApp() {
-    const welcome = document.getElementById('welcome-screen');
-    const auth = document.getElementById('auth-screen');
-    if (welcome) welcome.classList.remove('active');
-    if (auth) {
-        auth.classList.add('active');
-        showLogin();
+async function requestOTP() {
+    const phone = document.getElementById('reg-phone').value;
+    const username = document.getElementById('reg-username').value;
+    const telegramId = document.getElementById('reg-telegram-id').value;
+    
+    if (!phone || !username || !telegramId) {
+        showToast('Please fill all fields');
+        return;
     }
-}
 
-function startAppWithSignup() {
-    const welcome = document.getElementById('welcome-screen');
-    const auth = document.getElementById('auth-screen');
-    if (welcome) welcome.classList.remove('active');
-    if (auth) {
-        auth.classList.add('active');
-        showSignup();
-    }
-}
-window.startApp = startApp;
-window.startAppWithSignup = startAppWithSignup;
-
-const doLoginBtn = document.getElementById('do-login');
-if (doLoginBtn) {
-    doLoginBtn.onclick = async () => {
-        const phone = document.getElementById('login-phone').value;
-        const password = document.getElementById('login-pass').value;
-        const errorEl = document.getElementById('auth-error');
-        if (errorEl) errorEl.innerText = '';
-
-        try {
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone, password })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                localStorage.setItem('bingo_token', data.token);
-                updateUserData(data);
-                document.getElementById('auth-screen').classList.remove('active');
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('main-content').style.display = 'block';
-                navTo('stake');
-                initApp();
-            } else {
-                if (errorEl) errorEl.innerText = data.error || 'Login failed';
-            }
-        } catch (e) { 
-            console.error(e);
-            if (errorEl) errorEl.innerText = 'Connection error';
+    try {
+        const res = await fetch('/api/request-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, username, telegram_chat_id: telegramId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('otp-section').style.display = 'block';
+            showToast('OTP sent to your Telegram!');
+        } else {
+            showToast(data.message);
         }
-    };
-}
-
-window.showSignup = () => {
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('signup-form').style.display = 'block';
-    document.getElementById('otp-form').style.display = 'none';
-};
-
-window.showLogin = () => {
-    document.getElementById('login-form').style.display = 'block';
-    document.getElementById('signup-form').style.display = 'none';
-    document.getElementById('otp-form').style.display = 'none';
-};
-
-const doSignupBtn = document.getElementById('do-signup');
-if (doSignupBtn) {
-    doSignupBtn.onclick = async () => {
-        const username = document.getElementById('signup-username').value;
-        const telegram_chat_id = document.getElementById('signup-telegram').value;
-        const password = document.getElementById('signup-pass').value;
-        const errorEl = document.getElementById('auth-error');
-
-        if (!username || !telegram_chat_id || !password) {
-            if (errorEl) errorEl.innerText = "ሁሉንም መረጃዎች ያስገቡ";
-            return;
-        }
-
-        try {
-            const res = await fetch('/api/signup-request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telegram_chat_id, username })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                document.getElementById('signup-form').style.display = 'none';
-                document.getElementById('otp-form').style.display = 'block';
-                const hint = document.getElementById('otp-hint');
-                if (hint) hint.innerText = `OTP ወደ ቴሌግራም (${telegram_chat_id}) ተልኳል`;
-                
-                window.signupTempData = { username, telegram_chat_id, password };
-            } else {
-                if (errorEl) errorEl.innerText = data.error;
-            }
-        } catch (e) { console.error(e); }
-    };
-}
-
-const verifyOtpBtn = document.getElementById('verify-otp');
-if (verifyOtpBtn) {
-    verifyOtpBtn.onclick = async () => {
-        const otp = document.getElementById('otp-code').value;
-        const errorEl = document.getElementById('auth-error');
-        const signupData = window.signupTempData;
-
-        if (!otp) return alert("OTP ያስገቡ");
-        if (!signupData) return alert("የምዝገባ መረጃ አልተገኘም፣ እባክዎ እንደገና ይሞክሩ");
-
-        try {
-            const res = await fetch('/api/signup-verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...signupData, otp })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                localStorage.setItem('bingo_token', data.token);
-                updateUserData(data);
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('main-content').style.display = 'block';
-                navTo('stake');
-                initApp();
-            } else {
-                if (errorEl) errorEl.innerText = data.error;
-            }
-        } catch (e) { console.error(e); }
-    };
-}
-
-function promptAdminPassword() {
-    const pass = prompt("አድሚን ፓስወርድ ያስገቡ:");
-    if (pass === "fidel123") {
-        navTo('admin');
-    } else {
-        alert("የተሳሳተ ፓስወርድ!");
+    } catch (e) {
+        showToast('Error sending OTP');
     }
 }
-window.promptAdminPassword = promptAdminPassword;
 
-const submitWithdraw = document.getElementById('submit-withdraw');
-if (submitWithdraw) {
-    submitWithdraw.onclick = async () => {
-        const amount = parseFloat(document.getElementById('withdraw-amount').value);
-        const method = document.getElementById('withdraw-method').value;
-        const account = document.getElementById('withdraw-account').value;
-        const statusEl = document.getElementById('withdraw-status');
-        const token = localStorage.getItem('bingo_token');
+async function register() {
+    const phone = document.getElementById('reg-phone').value;
+    const username = document.getElementById('reg-username').value;
+    const telegramId = document.getElementById('reg-telegram-id').value;
+    const password = document.getElementById('reg-password').value;
+    const otp = document.getElementById('reg-otp').value;
 
-        if (isNaN(amount) || amount < 50) return alert("Minimum withdrawal is 50 ETB");
-        if (!account) return alert("Please enter account details");
-
-        try {
-            const res = await fetch('/api/withdraw-request', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ amount, method, account })
-            });
-            const data = await res.json();
-            statusEl.innerText = data.message || data.error;
-            if (res.ok) {
-                userBalance -= amount;
-                updateUserData({ balance: userBalance });
-            }
-        } catch (e) { console.error(e); }
-    };
+    try {
+        const res = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, username, telegram_chat_id: telegramId, password, otp })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('Registration successful! Please login.');
+            showAuth('login');
+        } else {
+            showToast(data.message);
+        }
+    } catch (e) {
+        showToast('Registration error');
+    }
 }
-
-initApp();
