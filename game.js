@@ -507,6 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('loginCredentials', JSON.stringify({ telegramId, password }));
                     showToast('እንኳን በደህና መጡ!');
                     navTo('stake');
                 } else {
@@ -516,6 +517,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('ከሰርቨር ጋር መገናኘት አልተቻለም።');
             }
         });
+    }
+
+    // Auto-login if credentials exist
+    const savedCredentials = localStorage.getItem('loginCredentials');
+    if (savedCredentials && !localStorage.getItem('token')) {
+        const { telegramId, password } = JSON.parse(savedCredentials);
+        fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: telegramId, password })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                navTo('stake');
+            }
+        })
+        .catch(err => console.error('Auto-login failed:', err));
     }
 });
 
