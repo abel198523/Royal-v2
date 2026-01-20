@@ -99,7 +99,7 @@ function updateCountdown(seconds) {
     }
 }
 
-const STAKES = [5, 10, 20, 30, 40, 50, 100, 200, 500];
+const STAKES = [5, 10, 20];
 
 let staticCards = [];
 fetch('cards.json')

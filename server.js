@@ -15,7 +15,7 @@ const SECRET_KEY = "bingo_secret_123";
 app.use(express.json());
 app.use(express.static(__dirname));
 
-const STAKES = [5, 10, 20, 30, 40, 50, 100, 200, 500];
+const STAKES = [5, 10, 20];
 let rooms = {};
 
 STAKES.forEach(amount => {
