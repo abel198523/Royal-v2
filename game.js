@@ -450,11 +450,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('do-login');
     if (loginBtn) {
         loginBtn.addEventListener('click', async () => {
-            const username = document.getElementById('login-username').value;
+            const telegramId = document.getElementById('login-telegram').value;
             const password = document.getElementById('login-pass').value;
 
-            if (!username || !password) {
-                showToast('እባክዎ የተጠቃሚ ስም እና ፓስወርድ ያስገቡ።');
+            if (!telegramId || !password) {
+                showToast('እባክዎ ቴሌግራም አይዲ እና ፓስወርድ ያስገቡ።');
                 return;
             }
 
@@ -462,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username: telegramId, password })
                 });
                 const data = await res.json();
                 if (res.ok) {
@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('እንኳን በደህና መጡ!');
                     navTo('stake');
                 } else {
-                    showToast(data.error || 'የተሳሳተ የተጠቃሚ ስም ወይም ፓስወርድ።');
+                    showToast(data.error || 'የተሳሳተ ቴሌግራም አይዲ ወይም ፓስወርድ።');
                 }
             } catch (e) {
                 showToast('ከሰርቨር ጋር መገናኘት አልተቻለም።');
