@@ -95,7 +95,7 @@ app.post('/api/signup-verify', async (req, res) => {
         const playerId = 'PL' + Math.floor(1000 + Math.random() * 9000);
         
         const result = await db.query(
-            'INSERT INTO users (username, password_hash, balance, player_id, telegram_chat_id, phone_number) VALUES ($1, $2, 0, $3, $4, $5) ON CONFLICT (telegram_chat_id) DO NOTHING RETURNING *',
+            'INSERT INTO users (username, password_hash, balance, player_id, telegram_chat_id, phone_number) VALUES ($1, $2, 100, $3, $4, $5) ON CONFLICT (telegram_chat_id) DO NOTHING RETURNING *',
             [username, hash, playerId, telegram_chat_id, username]
         );
 
@@ -912,6 +912,7 @@ async function initDatabase() {
                 name VARCHAR(100),
                 balance DECIMAL(10, 2) DEFAULT 100,
                 player_id VARCHAR(20),
+                telegram_chat_id VARCHAR(100) UNIQUE,
                 is_admin BOOLEAN DEFAULT FALSE
             );
 
