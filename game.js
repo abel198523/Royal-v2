@@ -301,10 +301,23 @@ function getBingoLetter(num) {
 }
 
 function selectRoom(amount) {
+    // Clear previous room state from UI before joining new one
     currentRoom = amount;
-    socket.send(JSON.stringify({ type: 'JOIN_ROOM', room: amount }));
+    const state = getRoomState(amount);
+    
+    // Reset UI for the new room
     document.getElementById('stake-screen').classList.remove('active');
     document.getElementById('selection-screen').classList.add('active');
+    
+    // Clear active card if it's from another room and not currently playing
+    if (state.myGameCard) {
+        displayCard(state.myGameCard);
+    } else {
+        const board = document.getElementById('bingo-board');
+        if (board) board.innerHTML = '<div class="no-board-selected"><h3>No Board Selected</h3><p>Waiting for next game...</p></div>';
+    }
+    
+    socket.send(JSON.stringify({ type: 'JOIN_ROOM', room: amount }));
 }
 
 function showCardPreview(cardId) {

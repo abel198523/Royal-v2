@@ -792,10 +792,21 @@ wss.on('connection', (ws) => {
             const room = rooms[ws.room];
             if (room) {
                 room.players.add(ws);
+                
+                // Restore room-specific card data from session storage
+                if (ws.roomData && ws.roomData[ws.room]) {
+                    ws.cardNumber = ws.roomData[ws.room].cardNumber;
+                    ws.cardData = ws.roomData[ws.room].cardData;
+                } else {
+                    ws.cardNumber = null;
+                    ws.cardData = null;
+                }
+                
                 // Also get taken cards for this specific room
                 const roomTaken = [];
                 room.players.forEach(p => {
-                    if (p.cardNumber) roomTaken.push(p.cardNumber);
+                    const pCard = (p.roomData && p.roomData[ws.room]) ? p.roomData[ws.room].cardNumber : p.cardNumber;
+                    if (pCard) roomTaken.push(pCard);
                 });
                 
                 ws.send(JSON.stringify({ 
@@ -813,9 +824,21 @@ wss.on('connection', (ws) => {
         if (data.type === 'BUY_CARD') {
             if (!ws.room || !ws.userId) return;
 
+            const room = rooms[ws.room];
+            if (!room) return;
+
+            // Check if card is taken IN THIS ROOM
+            const isTaken = Array.from(room.players).some(p => {
+                const pCard = (p.roomData && p.roomData[ws.room]) ? p.roomData[ws.room].cardNumber : p.cardNumber;
+                return pCard === data.cardNumber;
+            });
+            if (isTaken) {
+                return ws.send(JSON.stringify({ type: 'ERROR', message: 'ይህ ካርድ ተይዟል!' }));
+            }
+
             // Deduct balance from DB
             try {
-                const stake = rooms[ws.room].stake;
+                const stake = room.stake;
                 const user = await db.query('SELECT balance FROM users WHERE id = $1', [ws.userId]);
                 if (user.rows[0].balance < stake) {
                     return ws.send(JSON.stringify({ type: 'ERROR', message: 'በቂ ባላንስ የልዎትም!' }));
