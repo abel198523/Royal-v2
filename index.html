@@ -29,7 +29,7 @@
         <!-- Sidebar Navigation -->
         <div id="side-menu" class="side-menu">
             <div class="menu-header">
-                <div class="menu-logo" id="menu-logo-trigger">FIDEL BINGO</div>
+                <div class="menu-logo" id="menu-logo-trigger" onclick="handleLogoClick()">FIDEL BINGO</div>
                 <button id="close-menu" class="close-menu-btn">×</button>
             </div>
             <div class="menu-items">
@@ -291,11 +291,11 @@
                         </div>
                     </div>
 
-                    <div id="admin-users-tab" class="admin-tab-content active">
-                        <div class="admin-search-box">
-                            <input type="text" id="admin-search-phone" placeholder="Phone Number (e.g. 09...)">
-                            <button id="admin-search-btn" class="admin-btn">Search User</button>
-                        </div>
+                <div id="admin-users-tab" class="admin-tab-content active">
+                    <div class="admin-search-box">
+                        <input type="text" id="admin-search-player-id" placeholder="Player ID (e.g. PL1234)">
+                        <button id="admin-search-btn" class="admin-btn">Search User</button>
+                    </div>
                         
                         <div id="admin-user-result" class="admin-user-card" style="display: none;">
                             <div class="user-info">

@@ -156,13 +156,13 @@ app.post('/api/login', async (req, res) => {
 
 // Middleware to check if user is admin
 const adminOnly = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: "ያልተፈቀደ ሙከራ" });
+    const token = authHeader.split(' ')[1];
     if (!token) return res.status(401).json({ error: "ያልተፈቀደ ሙከራ" });
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        // ጥብቅ ቁጥጥር፡ በስልክ ቁጥሩ ብቻ አድሚን መሆኑን ማረጋገጥ
-        // 0980682889 በቋሚነት አድሚን ነው
-        if (decoded.username === '0980682889' || (decoded.is_admin && decoded.username === '0980682889')) {
+        if (decoded.is_admin) {
             req.user = decoded;
             next();
         } else {
@@ -188,7 +188,7 @@ app.get('/api/admin/user/:phone', adminOnly, async (req, res) => {
 app.get('/api/admin/deposits', adminOnly, async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT dr.*, u.phone_number, u.name 
+            SELECT dr.*, u.phone_number, u.username as name 
             FROM deposit_requests dr 
             JOIN users u ON dr.user_id = u.id 
             WHERE dr.status = 'pending' 
@@ -341,17 +341,58 @@ app.post('/api/deposit-request', async (req, res) => {
     }
 });
 
-app.post('/api/admin/update-balance', adminOnly, async (req, res) => {
-    const { phone, balance } = req.body;
+// Admin login with password
+app.post('/api/admin/login', async (req, res) => {
+    const { password } = req.body;
+    if (password === 'admin123') {
+        const token = jwt.sign({ username: 'admin', is_admin: true }, SECRET_KEY);
+        res.json({ success: true, token });
+    } else {
+        res.status(401).json({ success: false, error: "Invalid password" });
+    }
+});
+
+// Admin Route - Search by Player ID
+app.get('/api/admin/user/:playerId', adminOnly, async (req, res) => {
+    const { playerId } = req.params;
     try {
-        const result = await db.query(
-            'UPDATE users SET balance = $1 WHERE phone_number = $2 RETURNING *',
-            [balance, phone]
-        );
-        if (result.rows.length === 0) return res.status(404).json({ error: "ተጠቃሚው አልተገኘም" });
-        res.json({ message: "ሂሳብ በትክክል ተስተካክሏል", user: result.rows[0] });
+        const result = await db.query('SELECT id, username, phone_number, balance, player_id FROM users WHERE player_id = $1', [playerId]);
+        if (result.rows.length === 0) return res.status(404).json({ success: false, error: "ተጠቃሚው አልተገኘም" });
+        res.json({ success: true, user: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ error: "ማስተካከሉ አልተሳካም" });
+        res.status(500).json({ success: false, error: "የሰርቨር ስህተት" });
+    }
+});
+
+app.post('/api/admin/update-balance', adminOnly, async (req, res) => {
+    const { userId, amount, action } = req.body;
+    try {
+        await db.query('BEGIN');
+        const user = await db.query('SELECT balance FROM users WHERE id = $1', [userId]);
+        if (user.rows.length === 0) throw new Error("ተጠቃሚው አልተገኘም");
+
+        let newBalance = parseFloat(user.rows[0].balance);
+        if (action === 'add') {
+            newBalance += parseFloat(amount);
+        } else {
+            newBalance -= parseFloat(amount);
+        }
+
+        const result = await db.query(
+            'UPDATE users SET balance = $1 WHERE id = $2 RETURNING balance',
+            [newBalance, userId]
+        );
+
+        await db.query(
+            'INSERT INTO balance_history (user_id, type, amount, balance_after, description) VALUES ($1, $2, $3, $4, $5)',
+            [userId, 'admin_adjustment', action === 'add' ? amount : -amount, result.rows[0].balance, `Admin ${action}`]
+        );
+
+        await db.query('COMMIT');
+        res.json({ success: true, newBalance: result.rows[0].balance });
+    } catch (err) {
+        await db.query('ROLLBACK');
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -395,7 +436,7 @@ app.post('/api/withdraw-request', async (req, res) => {
 app.get('/api/admin/withdrawals', adminOnly, async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT wr.*, u.phone_number, u.name 
+            SELECT wr.*, u.phone_number, u.username as name 
             FROM withdraw_requests wr 
             JOIN users u ON wr.user_id = u.id 
             WHERE wr.status = 'pending' 
