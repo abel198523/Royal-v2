@@ -15,13 +15,79 @@ const colors = {
     O: '#ef4444'
 };
 
-// Admin Panel Trigger (Double Tap)
+// --- NAVIGATION & UI ---
+function showAuth(type) {
+    const welcome = document.getElementById('welcome-screen');
+    const auth = document.getElementById('auth-screen');
+    if (welcome) welcome.style.display = 'none';
+    if (auth) {
+        auth.style.display = 'flex';
+        auth.classList.add('active');
+    }
+    if (type === 'signup') showSignup();
+    else showLogin();
+}
+
+function showLogin() {
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const otpForm = document.getElementById('otp-form');
+    if (loginForm) loginForm.style.display = 'block';
+    if (signupForm) signupForm.style.display = 'none';
+    if (otpForm) otpForm.style.display = 'none';
+}
+
+function showSignup() {
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const otpForm = document.getElementById('otp-form');
+    if (loginForm) loginForm.style.display = 'none';
+    if (signupForm) signupForm.style.display = 'block';
+    if (otpForm) otpForm.style.display = 'none';
+}
+
+function navTo(screenId) {
+    const screens = [
+        'welcome-screen', 'auth-screen', 'stake-screen', 'profile-screen', 
+        'wallet-screen', 'deposit-screen', 'withdraw-screen', 'admin-screen', 
+        'selection-screen', 'game-screen'
+    ];
+    
+    screens.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            const shouldShow = (id === screenId || id === screenId + '-screen');
+            el.style.display = shouldShow ? (id === 'auth-screen' ? 'flex' : 'block') : 'none';
+            if (shouldShow) el.classList.add('active');
+            else el.classList.remove('active');
+        }
+    });
+
+    if (['stake', 'profile', 'wallet', 'deposit', 'withdraw', 'admin', 'selection', 'game'].includes(screenId)) {
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) mainContent.style.display = 'block';
+    }
+}
+
+function closeMenu() {
+    const sideMenu = document.getElementById('side-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    if (sideMenu) sideMenu.classList.remove('active');
+    if (menuOverlay) menuOverlay.classList.remove('active');
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('adminToken');
+    window.location.reload();
+}
+
+// --- ADMIN LOGIC ---
 let lastLogoTap = 0;
 function handleLogoClick() {
     const now = Date.now();
-    if (now - lastLogoTap < 500) {
-        promptAdminPassword();
-    }
+    if (now - lastLogoTap < 500) promptAdminPassword();
     lastLogoTap = now;
 }
 
@@ -39,20 +105,17 @@ async function promptAdminPassword() {
         if (data.success) {
             localStorage.setItem('isAdmin', 'true');
             localStorage.setItem('adminToken', data.token);
-            document.getElementById('admin-menu-item').style.display = 'flex';
+            const adminMenu = document.getElementById('admin-menu-item');
+            if (adminMenu) adminMenu.style.display = 'flex';
             navTo('admin');
             closeMenu();
-        } else {
-            alert("Invalid Password");
-        }
-    } catch (err) {
-        console.error("Admin login error:", err);
-    }
+        } else alert("Invalid Password");
+    } catch (err) { console.error("Admin login error:", err); }
 }
 
-// User Balance Search
+// Admin Search & Balance
 document.getElementById('admin-search-btn')?.addEventListener('click', async () => {
-    const playerId = document.getElementById('admin-search-player-id').value;
+    const playerId = document.getElementById('admin-search-player-id')?.value;
     if (!playerId) return;
 
     try {
@@ -61,23 +124,18 @@ document.getElementById('admin-search-btn')?.addEventListener('click', async () 
         });
         const data = await res.json();
         if (data.success) {
-            document.getElementById('admin-user-result').style.display = 'block';
+            const resultDiv = document.getElementById('admin-user-result');
+            if (resultDiv) resultDiv.style.display = 'block';
             document.getElementById('admin-user-name').textContent = data.user.username;
             document.getElementById('admin-user-phone').textContent = data.user.phone_number;
             document.getElementById('admin-user-balance').textContent = parseFloat(data.user.balance).toFixed(2);
-            // Store current search ID for balance updates
             window.currentAdminTargetId = data.user.id;
-        } else {
-            alert("User not found");
-        }
-    } catch (err) {
-        alert("Error searching user");
-    }
+        } else alert("User not found");
+    } catch (err) { alert("Error searching user"); }
 });
 
-// Update Balance
 async function updateBalance(action) {
-    const amount = parseFloat(document.getElementById('admin-balance-amount').value);
+    const amount = parseFloat(document.getElementById('admin-balance-amount')?.value);
     if (!amount || amount <= 0 || !window.currentAdminTargetId) return;
 
     try {
@@ -94,18 +152,16 @@ async function updateBalance(action) {
             document.getElementById('admin-user-balance').textContent = parseFloat(data.newBalance).toFixed(2);
             document.getElementById('admin-balance-amount').value = '';
             alert(`Balance ${action === 'add' ? 'added' : 'subtracted'} successfully`);
-        } else {
-            alert(data.error || "Update failed");
-        }
-    } catch (err) {
-        alert("Error updating balance");
-    }
+        } else alert(data.error || "Update failed");
+    } catch (err) { alert("Error updating balance"); }
 }
 
 document.getElementById('admin-add-balance')?.addEventListener('click', () => updateBalance('add'));
 document.getElementById('admin-sub-balance')?.addEventListener('click', () => updateBalance('sub'));
 
+// --- GAME LOGIC ---
 function createBingoNumbers() {
+    if (!bingoBoard) return;
     bingoBoard.innerHTML = '';
     for (let row = 0; row < 15; row++) {
         for (let col = 0; col < 5; col++) {
@@ -119,30 +175,15 @@ function createBingoNumbers() {
     }
 }
 
+const STAKES = [5, 10, 20];
 let currentRoom = null;
 let roomTakenCards = [];
 let roomStates = {};
 
-function getRoomState(roomId) {
-    if (!roomStates[roomId]) {
-        roomStates[roomId] = {
-            myGameCard: null,
-            currentSelectedCard: null,
-            currentCardData: null,
-            lastHistory: []
-        };
-    }
-    return roomStates[roomId];
-}
-
 function updateRoomStats(stats, roomTimers, prizes) {
     Object.keys(stats).forEach(amount => {
         const countEl = document.getElementById(`stake-count-${amount}`);
-        if (countEl) {
-            countEl.innerText = `${stats[amount]} Players`;
-            countEl.style.fontWeight = 'bold';
-            countEl.style.color = stats[amount] > 0 ? '#3b82f6' : '#6b7280';
-        }
+        if (countEl) countEl.innerText = `${stats[amount]} Players`;
         
         const prizeEl = document.getElementById(`stake-prize-${amount}`);
         if (prizeEl && prizes && prizes[amount] !== undefined) {
@@ -155,13 +196,10 @@ function updateRoomStats(stats, roomTimers, prizes) {
             const val = roomTimers[amount];
             if (val === 'PLAYING') {
                 timerEl.innerText = '🎮 PLAYING';
-                timerEl.style.color = '#22c55e';
-                timerEl.style.background = 'rgba(34, 197, 94, 0.1)';
+                timerEl.className = 'stake-timer playing';
             } else {
-                const seconds = parseInt(val);
-                timerEl.innerText = `⏰ ${seconds}`;
-                timerEl.style.color = '#f59e0b';
-                timerEl.style.background = 'rgba(245, 158, 11, 0.1)';
+                timerEl.innerText = `⏰ ${val}`;
+                timerEl.className = 'stake-timer';
             }
         }
     });
@@ -170,46 +208,23 @@ function updateRoomStats(stats, roomTimers, prizes) {
 function updateCountdown(seconds) {
     const timerEl = document.getElementById('selection-timer');
     const timerLargeEl = document.getElementById('selection-timer-large');
-    const stakeTimerEl = document.getElementById('stake-selection-timer');
-    
-    const timeStr = seconds === 'PLAYING' ? 'በጨዋታ ላይ' : seconds;
     const timeStrWithEmoji = seconds === 'PLAYING' ? '🎮 በጨዋታ ላይ' : `⏰ ${seconds}`;
-    
     if (timerEl) timerEl.innerText = timeStrWithEmoji;
-    if (timerLargeEl) timerLargeEl.innerText = timeStr;
-    if (stakeTimerEl) stakeTimerEl.innerText = timeStrWithEmoji;
-    
-    if (typeof STAKES !== 'undefined') {
-        STAKES.forEach(amount => {
-            const rowTimer = document.getElementById(`stake-timer-${amount}`);
-            if (rowTimer && currentRoom == amount) {
-                rowTimer.innerText = timeStrWithEmoji;
-            }
-        });
-    }
+    if (timerLargeEl) timerLargeEl.innerText = seconds === 'PLAYING' ? 'በጨዋታ ላይ' : seconds;
 }
 
-const STAKES = [5, 10, 20];
+// Initial setup
+document.addEventListener('DOMContentLoaded', () => {
+    createBingoNumbers();
+    const sideMenu = document.getElementById('side-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const toggleMenu = () => {
+        if (sideMenu) sideMenu.classList.toggle('active');
+        if (menuOverlay) menuOverlay.classList.toggle('active');
+    };
 
-let staticCards = [];
-fetch('cards.json')
-    .then(r => r.json())
-    .then(data => {
-        staticCards = data;
-    })
-    .catch(err => console.error('Error loading cards:', err));
-
-function getCardById(id) {
-    const found = staticCards.find(c => c.id === id);
-    return found ? found.data : (staticCards[0] ? staticCards[0].data : null);
-}
-
-function createAvailableCards() {
-    const cardsGrid = document.getElementById('cards-grid');
-    if (!cardsGrid) return;
-    cardsGrid.innerHTML = '';
-    
-    // Ensure we are working with numbers
-    const takenNumbers = roomTakenCards.map(Number);
-    const availableCount = 100 - takenNumbers.length;
-    const takenCount = takenNumbers.length;
+    document.getElementById('close-menu')?.addEventListener('click', toggleMenu);
+    document.getElementById('menu-overlay')?.addEventListener('click', toggleMenu);
+    document.getElementById('open-menu-stake')?.addEventListener('click', toggleMenu);
+    document.getElementById('open-menu-game')?.addEventListener('click', toggleMenu);
+});
