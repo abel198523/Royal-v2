@@ -1,6 +1,7 @@
 // 1. መሰረታዊ መረጃዎች
 const STAKES = [5, 10, 20, 50, 100];
 let currentUser = null;
+let socket = null;
 
 // 2. ሩሞችን በስክሪኑ ላይ የመሳል ስራ
 function renderStakeRooms() {
@@ -14,8 +15,16 @@ function renderStakeRooms() {
 
     STAKES.forEach(amount => {
         const row = document.createElement('div');
-        row.className = 'stake-card'; // በ CSSህ መሰረት ቀይረው (ለምሳሌ stake-row)
-        row.style = "background: #2a2a2a; margin: 10px; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #f59e0b; cursor: pointer;";
+        row.className = 'stake-card';
+        row.style.background = "#2a2a2a";
+        row.style.margin = "10px";
+        row.style.padding = "15px";
+        row.style.borderRadius = "10px";
+        row.style.display = "flex";
+        row.style.justifyContent = "space-between";
+        row.style.alignItems = "center";
+        row.style.borderLeft = "5px solid #f59e0b";
+        row.style.cursor = "pointer";
         
         row.onclick = () => selectStake(amount);
         
@@ -38,24 +47,73 @@ function selectStake(amount) {
     document.getElementById('stake-screen').style.display = 'none';
     document.getElementById('game-screen').style.display = 'block';
     document.getElementById('bet-amount').innerText = amount;
-    // እዚህ ጋር ወደ ሰርቨር የሚላክ ኮድ ይጨመራል...
+    
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+            type: 'JOIN_ROOM',
+            room: amount,
+            token: localStorage.getItem('token')
+        }));
+    }
 }
 
 // 4. ገጹ ሲከፈት በቅድሚያ የሚሰሩ ስራዎች
 document.addEventListener('DOMContentLoaded', () => {
-    // ሩሞቹን ወዲያውኑ ሳል
     renderStakeRooms();
 
-    // የሎጊን ሙከራ (ለሙከራ ያህል)
-    document.getElementById('do-login').addEventListener('click', () => {
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-        document.getElementById('stake-username').innerText = "Player1";
-        renderStakeRooms(); // ዳታው መኖሩን ለማረጋገጥ ደግመህ ጥራው
-    });
+    const loginBtn = document.getElementById('do-login');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', async () => {
+            const username = document.getElementById('login-telegram').value;
+            const password = document.getElementById('login-pass').value;
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    currentUser = data;
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('main-content').style.display = 'block';
+                    document.getElementById('stake-username').innerText = data.username;
+                    renderStakeRooms();
+                    initWebSocket();
+                } else {
+                    alert(data.error || "Login failed");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Connection error");
+            }
+        });
+    }
 });
 
-// ስክሪን ለመቀየር የሚረዳ ፋንክሽን
+function initWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    socket = new WebSocket(`${protocol}//${window.location.host}`);
+    
+    socket.onopen = () => {
+        console.log("WebSocket connected");
+    };
+
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'STATS_UPDATE') {
+            Object.keys(data.rooms).forEach(room => {
+                const countEl = document.getElementById(`stake-count-${room}`);
+                if (countEl) {
+                    countEl.innerText = `${data.rooms[room].playerCount} Players`;
+                }
+            });
+        }
+    };
+}
+
 function showAuth(type) {
     document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('auth-screen').style.display = 'flex';
