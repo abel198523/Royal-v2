@@ -83,6 +83,102 @@ function logout() {
     window.location.reload();
 }
 
+// --- AUTH LOGIC ---
+async function handleLogin() {
+    const username = document.getElementById('login-telegram')?.value;
+    const password = document.getElementById('login-pass')?.value;
+    const errorEl = document.getElementById('auth-error');
+
+    if (!username || !password) {
+        if (errorEl) errorEl.innerText = "እባክዎ ሁሉንም መረጃዎች ያስገቡ";
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('token', data.token);
+            if (data.is_admin) {
+                localStorage.setItem('isAdmin', 'true');
+                const adminMenu = document.getElementById('admin-menu-item');
+                if (adminMenu) adminMenu.style.display = 'flex';
+            }
+            document.getElementById('stake-username').innerText = data.username;
+            document.getElementById('profile-username-top').innerText = data.username;
+            navTo('stake');
+            setupWebSocket();
+        } else {
+            if (errorEl) errorEl.innerText = data.error || "የመግባት ስህተት";
+        }
+    } catch (err) {
+        if (errorEl) errorEl.innerText = "የሰርቨር ግንኙነት ተቋርጧል";
+    }
+}
+
+async function handleSignup() {
+    const username = document.getElementById('signup-username')?.value;
+    const telegram_chat_id = document.getElementById('signup-telegram')?.value;
+    const errorEl = document.getElementById('auth-error');
+
+    if (!username || !telegram_chat_id) {
+        if (errorEl) errorEl.innerText = "እባክዎ ሁሉንም መረጃዎች ያስገቡ";
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/signup-request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, telegram_chat_id })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('otp-form').style.display = 'block';
+            if (errorEl) errorEl.innerText = "";
+        } else {
+            if (errorEl) errorEl.innerText = data.error || "የምዝገባ ስህተት";
+        }
+    } catch (err) {
+        if (errorEl) errorEl.innerText = "የሰርቨር ግንኙነት ተቋርጧል";
+    }
+}
+
+async function handleVerifyOTP() {
+    const telegram_chat_id = document.getElementById('signup-telegram')?.value;
+    const otp = document.getElementById('otp-code')?.value;
+    const password = document.getElementById('signup-pass')?.value;
+    const errorEl = document.getElementById('auth-error');
+
+    if (!otp || !password) {
+        if (errorEl) errorEl.innerText = "እባክዎ ኮዱን እና ፓስወርድ ያስገቡ";
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/signup-verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_chat_id, otp, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('token', data.token);
+            navTo('stake');
+            setupWebSocket();
+        } else {
+            if (errorEl) errorEl.innerText = data.error || "የማረጋገጫ ስህተት";
+        }
+    } catch (err) {
+        if (errorEl) errorEl.innerText = "የሰርቨር ግንኙነት ተቋርጧል";
+    }
+}
+
 // --- ADMIN LOGIC ---
 let lastLogoTap = 0;
 function handleLogoClick() {
@@ -113,7 +209,7 @@ async function promptAdminPassword() {
     } catch (err) { console.error("Admin login error:", err); }
 }
 
-// Admin Search & Balance
+// User Balance Search
 document.getElementById('admin-search-btn')?.addEventListener('click', async () => {
     const playerId = document.getElementById('admin-search-player-id')?.value;
     if (!playerId) return;
@@ -213,9 +309,62 @@ function updateCountdown(seconds) {
     if (timerLargeEl) timerLargeEl.innerText = seconds === 'PLAYING' ? 'በጨዋታ ላይ' : seconds;
 }
 
+// WebSocket setup
+let ws;
+function setupWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${protocol}//${window.location.host}`);
+    
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'STATS') {
+            updateRoomStats(data.stats, data.timers, data.prizes);
+        } else if (data.type === 'COUNTDOWN') {
+            updateCountdown(data.value);
+        } else if (data.type === 'GAME_START') {
+            navTo('game');
+        } else if (data.type === 'NEW_BALL') {
+            const ball = data.ball;
+            const cell = document.getElementById(`num-${ball}`);
+            if (cell) cell.classList.add('marked');
+            if (activeBall) {
+                activeBall.innerText = ball;
+                activeBall.style.background = colors[ball <= 15 ? 'B' : ball <= 30 ? 'I' : ball <= 45 ? 'N' : ball <= 60 ? 'G' : 'O'];
+            }
+        }
+    };
+}
+
+// Stake selection
+async function selectStake(amount) {
+    currentRoom = amount;
+    const token = localStorage.getItem('token');
+    if (!token) {
+        navTo('auth');
+        return;
+    }
+    
+    document.getElementById('sel-stake-amount').innerText = amount;
+    navTo('selection');
+    
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'JOIN_ROOM',
+            room: amount,
+            token: token
+        }));
+    }
+}
+
 // Initial setup
 document.addEventListener('DOMContentLoaded', () => {
     createBingoNumbers();
+    
+    // Auth event listeners
+    document.getElementById('do-login')?.addEventListener('click', handleLogin);
+    document.getElementById('do-signup')?.addEventListener('click', handleSignup);
+    document.getElementById('verify-otp')?.addEventListener('click', handleVerifyOTP);
+
     const sideMenu = document.getElementById('side-menu');
     const menuOverlay = document.getElementById('menu-overlay');
     const toggleMenu = () => {
@@ -227,4 +376,23 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('menu-overlay')?.addEventListener('click', toggleMenu);
     document.getElementById('open-menu-stake')?.addEventListener('click', toggleMenu);
     document.getElementById('open-menu-game')?.addEventListener('click', toggleMenu);
+
+    if (localStorage.getItem('token')) {
+        setupWebSocket();
+        navTo('stake');
+    }
 });
+
+// Expose functions to window for onclick handlers
+window.showAuth = showAuth;
+window.showLogin = showLogin;
+window.showSignup = showSignup;
+window.navTo = navTo;
+window.handleLogoClick = handleLogoClick;
+window.logout = logout;
+window.selectStake = selectStake;
+window.handleLogin = handleLogin;
+window.handleSignup = handleSignup;
+window.handleVerifyOTP = handleVerifyOTP;
+window.updateBalance = updateBalance;
+window.closeMenu = closeMenu;
