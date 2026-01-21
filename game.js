@@ -236,9 +236,6 @@ socket.onmessage = (event) => {
             buyState.myGameCard = data.cardData;
             buyState.currentSelectedCard = data.cardNumber;
             showToast(`Card #${data.cardNumber} purchased!`);
-            // Show start game button or redirect if game is already running
-            const startBtn = document.getElementById('start-game-btn');
-            if (startBtn) startBtn.style.display = 'block';
         }
     } else if (data.type === 'ROOM_STATS') {
         if (data.takenCards && data.takenCards[currentRoom]) {
@@ -335,10 +332,6 @@ function selectRoom(amount) {
     // Reset UI for the new room
     document.getElementById('stake-screen').classList.remove('active');
     document.getElementById('selection-screen').classList.add('active');
-    
-    // Hide start game button initially
-    const startBtn = document.getElementById('start-game-btn');
-    if (startBtn) startBtn.style.display = state.myGameCard ? 'block' : 'none';
     
     // Clear active card if it's from another room and not currently playing
     if (state.myGameCard) {
