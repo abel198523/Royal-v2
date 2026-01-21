@@ -32,6 +32,9 @@ A web-based Bingo game application with real-time gameplay using WebSockets.
 ## API Endpoints
 - `POST /api/login` - User authentication with phone and password
 
+## User Preferences
+- **Deployment Compatibility**: Always ensure the project remains compatible with Render.com deployment standards (environment variable usage, port binding via `process.env.PORT`, and standard build/start commands).
+
 ## Deployment (Render.com)
 - **Environment Variables**: Ensure `DATABASE_URL` (PostgreSQL), `SESSION_SECRET`, and `JWT_SECRET` are configured in Render.
 - **Build Command**: `npm install`
