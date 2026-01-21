@@ -230,6 +230,16 @@ socket.onmessage = (event) => {
             console.log("Updated taken cards for room:", currentRoom, roomTakenCards);
             createAvailableCards();
         }
+    } else if (data.type === 'BUY_CONFIRMED') {
+        if (data.room == currentRoom) {
+            const buyState = getRoomState(data.room);
+            buyState.myGameCard = data.cardData;
+            buyState.currentSelectedCard = data.cardNumber;
+            showToast(`Card #${data.cardNumber} purchased!`);
+            // Show start game button or redirect if game is already running
+            const startBtn = document.getElementById('start-game-btn');
+            if (startBtn) startBtn.style.display = 'block';
+        }
     } else if (data.type === 'ROOM_STATS') {
         if (data.takenCards && data.takenCards[currentRoom]) {
             roomTakenCards = data.takenCards[currentRoom];
@@ -243,6 +253,13 @@ socket.onmessage = (event) => {
 };
 
 function startGame() {
+    const gameRoomState = getRoomState(currentRoom);
+    if (!gameRoomState.myGameCard) {
+        showToast('እባክዎ መጀመሪያ ካርድ ይግዙ!');
+        navTo('selection');
+        return;
+    }
+
     const screens = ['stake-screen', 'selection-screen', 'profile-screen', 'wallet-screen'];
     screens.forEach(s => {
         const el = document.getElementById(s);
@@ -250,12 +267,12 @@ function startGame() {
     });
     document.getElementById('game-screen').classList.add('active');
     createBingoNumbers();
-    const state = getRoomState(currentRoom);
-    if (state.myGameCard) {
-        displayCard(state.myGameCard);
+    
+    if (gameRoomState.myGameCard) {
+        displayCard(gameRoomState.myGameCard);
     }
-    if (state.lastHistory) {
-        updateGameUI(state.lastHistory);
+    if (gameRoomState.lastHistory) {
+        updateGameUI(gameRoomState.lastHistory);
     }
 }
 
@@ -296,9 +313,9 @@ function updateGameUI(history) {
     progressBar.style.width = `${progress}%`;
     progressText.innerText = `${history.length}/75`;
 
-    const state = getRoomState(currentRoom);
-    if (state.myGameCard) {
-        updateCardHighlights(state.myGameCard, history);
+    const uiRoomState = getRoomState(currentRoom);
+    if (uiRoomState.myGameCard) {
+        updateCardHighlights(uiRoomState.myGameCard, history);
     }
 }
 
@@ -318,6 +335,10 @@ function selectRoom(amount) {
     // Reset UI for the new room
     document.getElementById('stake-screen').classList.remove('active');
     document.getElementById('selection-screen').classList.add('active');
+    
+    // Hide start game button initially
+    const startBtn = document.getElementById('start-game-btn');
+    if (startBtn) startBtn.style.display = state.myGameCard ? 'block' : 'none';
     
     // Clear active card if it's from another room and not currently playing
     if (state.myGameCard) {
@@ -365,11 +386,11 @@ function buyCard() {
         socket.send(JSON.stringify({
             type: 'BUY_CARD',
             room: currentRoom,
-            cardNumber: state.currentSelectedCard
+            cardNumber: state.currentSelectedCard,
+            cardData: state.currentCardData
         }));
-        state.myGameCard = state.currentCardData;
+        // state.myGameCard and state.currentSelectedCard will be set on BUY_CONFIRMED
         closeCardModal();
-        showToast(`Card #${state.currentSelectedCard} purchased!`);
     }
 }
 

@@ -856,7 +856,7 @@ wss.on('connection', (ws) => {
                     // Store card data per room on the connection object
                     if (!ws.roomData) ws.roomData = {};
                     ws.roomData[ws.room] = {
-                        cardNumber: data.cardNumber,
+                        cardNumber: Number(data.cardNumber),
                         cardData: data.cardData
                     };
                     
@@ -867,6 +867,14 @@ wss.on('connection', (ws) => {
                     // For backward compatibility/simplicity in broadcasting
                     ws.cardNumber = cardNum;
                     ws.cardData = data.cardData;
+
+                    // Send confirmation back to the user who bought it
+                    ws.send(JSON.stringify({
+                        type: 'BUY_CONFIRMED',
+                        room: ws.room,
+                        cardNumber: cardNum,
+                        cardData: data.cardData
+                    }));
 
                     console.log(`Room ${ws.room}: Card ${cardNum} bought by User ${ws.userId}`);
                     
